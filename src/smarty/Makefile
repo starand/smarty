@@ -1,6 +1,6 @@
 TARGET = smarty
 
-FW_DIR = ../../../cpp/framework
+FW_DIR = ../../../cpp_fw
 THIRDPARTY_DIR = ../../../cpp/3rdparty
 RASPI_DIR = $(FW_DIR)/dev/raspberry
 LIBRARY_PATH = $(shell pwd)/$(BIN_DIR)
