@@ -18,14 +18,12 @@
 namespace
 {
 
-static std::string high = "high";
-
 //--------------------------------------------------------------------------------------------------
 
 device_cmd_t get_device_cmd( Json::Value node )
 {
     return node.type( ) == Json::stringValue
-        ? node.asString( ) == high ? EC_TURNON : EC_TURNOFF
+        ? node.asString( ) == "high" || node.asString( ) == "on" ? EC_TURNON : EC_TURNOFF
         : node.asUInt( ) == 1 ? EC_TURNON : EC_TURNOFF;
 }
 
@@ -34,7 +32,8 @@ device_cmd_t get_device_cmd( Json::Value node )
 TriggerState get_sensor_state( Json::Value node )
 {
     return node.type( ) == Json::stringValue
-        ? node.asString( ) == high ? TriggerState::HIGH : TriggerState::LOW
+        ? node.asString( ) == "high" || node.asString( ) == "on"
+            ? TriggerState::HIGH : TriggerState::LOW
         : node.asUInt( ) == 1 ? TriggerState::HIGH : TriggerState::LOW;
 }
 
@@ -356,7 +355,20 @@ bool event_parser_t::parse_device_condition( Json::Value node,
         return false;
     }
 
-    uint pin = parse_sensor_pin( node );
+    uint pin = INVALID_PIN;
+    switch ( event_type )
+    {
+    case DeviceEventType::SENSOR:
+        pin = parse_sensor_pin( node );
+        break;
+    case DeviceEventType::BUTTON:
+    case DeviceEventType::LIGHT:
+        pin = parse_light_pin( node );
+        break;
+    case DeviceEventType::_UNKNOWN_:
+        break;
+    }
+
     if ( pin == INVALID_PIN )
     {
         return false;
