@@ -1,0 +1,1 @@
+smarty_ir.v2.0.c

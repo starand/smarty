@@ -1,0 +1,23 @@
+#ifndef __MC_ENUM_H__INCLUDED
+#define __MC_ENUM_H__INCLUDED
+
+
+enum ECOMMAND
+{
+    EC__MIN = 0,
+
+    EC_STATUS = EC__MIN,
+    EC_TURNON,
+    EC_TURNOFF,
+    EC_TURNALL,
+    EC_TURNEQUAL,
+
+    EC_TURNOFFBUTTON,
+    EC_TURNONBUTTON,
+
+    EC__MAX,
+    EC_ERROR = EC__MAX
+};
+
+#endif // __MC_ENUM_H__INCLUDED
+

@@ -1,0 +1,6 @@
+#ifndef __STDAFX_H_INCLUDED
+#define __STDAFX_H_INCLUDED
+
+#define F_CPU 8000000UL
+
+#endif // __STDAFX_H_INCLUDED
