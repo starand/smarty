@@ -1,16 +1,14 @@
 TARGET = smarty
 
-FW_DIR = ../../../../../framework
-THIRDPARTY_DIR = ../../../../../3rdparty
+FW_DIR = ../../../cpp/framework
+THIRDPARTY_DIR = ../../../cpp/3rdparty
 RASPI_DIR = $(FW_DIR)/dev/raspberry
 LIBRARY_PATH = $(shell pwd)/$(BIN_DIR)
-PROJECTS = ../../projects
 
 SRC_DIR = .
 COMMON_DIR = ../common
 BIN_DIR = ../../bin
 CFG_DIR = ./cfg
-RUN_SCRIPT = $(BIN_DIR)/run.sh
 
 SRC = \
 	$(SRC_DIR)/smarty_app.cpp \
@@ -39,8 +37,13 @@ OBJS = $(subst .cpp,.o, $(SRC))
 
 INCLUDES = -I./ -I../common -I.. \
 	-I$(RASPI_DIR) -I$(RASPI_DIR)/.. \
-	-I$(FW_DIR)/types -I$(FW_DIR)/common -I$(FW_DIR)/utils -I$(FW_DIR)/utils/files \
-	-I$(FW_DIR)/utils/threading -I$(FW_DIR)/utils/net -I$(THIRDPARTY_DIR)
+	-I$(FW_DIR)/types \
+	-I$(FW_DIR)/common \
+	-I$(FW_DIR)/utils \
+	-I$(FW_DIR)/utils/files \
+	-I$(FW_DIR)/utils/threading \
+	-I$(FW_DIR)/utils/net \
+	-I$(THIRDPARTY_DIR)
 
 CXX=g++
 CXXFLAGS = $(INCLUDES) -c -g -fPIC -std=gnu++0x
@@ -59,17 +62,8 @@ $(TARGET): $(OBJS)
 	@echo "    $< .."
 	@$(CXX) $(CXXFLAGS) -o $@ $<
 
-
-run : $(TARGET)
-	@echo ""
-	@echo "export LD_LIBRARY_PATH=$(LIBRARY_PATH)" > $(RUN_SCRIPT)
-	@echo "../../bin/$(TARGET)" >> $(RUN_SCRIPT)
-	@echo Running $(TARGET) ..
-	@$(RUN_SCRIPT)
-
 clean :
 	-@rm -rf $(OBJS) $(BIN_DIR)/$(TARGET)
-	-@rm -rf $(PROJECTS)/*.suo $(PROJECTS)/*.sdf $(PROJECTS)/projects/*.user $(PROJECTS)/smarty/Debug
 
 rebuild : clean $(TARGET)
 

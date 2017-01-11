@@ -1,9 +1,8 @@
 TARGET = server.so
 
-FW_DIR = ../../../../../framework
-THIRDPARTY_DIR = ../../../../../3rdparty
+FW_DIR = ../../../cpp/framework
+THIRDPARTY_DIR = ../../../cpp/3rdparty
 RASPI_DIR = $(FW_DIR)/dev/raspberry
-PROJECTS = ../../projects
 
 SRC_DIR = .
 COMMON_DIR = ../common
@@ -49,8 +48,14 @@ OBJS = $(subst .cpp,.o, $(SRC))
 
 INCLUDES = -I. -I.. -I../common \
 	-I$(RASPI_DIR) -I$(RASPI_DIR)/.. -I$(FW_DIR) \
-	-I$(FW_DIR)/types -I$(FW_DIR)/common -I$(FW_DIR)/utils -I$(FW_DIR)/utils/files -I$(FW_DIR)/utils/threading -I$(FW_DIR)/utils/net \
-	-I$(FW_DIR)/utils/serialize -I$(THIRDPARTY_DIR)
+	-I$(FW_DIR)/types \
+        -I$(FW_DIR)/common \
+        -I$(FW_DIR)/utils \
+        -I$(FW_DIR)/utils/files \
+        -I$(FW_DIR)/utils/threading \
+        -I$(FW_DIR)/utils/net \
+	-I$(FW_DIR)/utils/serialize \
+        -I$(THIRDPARTY_DIR)
 
 CXX=g++
 CXXFLAGS = $(INCLUDES) \
@@ -71,7 +76,6 @@ $(TARGET): $(OBJS)
 
 clean :
 	-@rm -rf $(OBJS) $(BIN_DIR)/$(TARGET)
-	-@rm -rf $(PROJECTS)/*.suo $(PROJECTS)/*.sdf $(PROJECTS)/projects/*.user $(PROJECTS)/server/Debug
 
 rebuild : clean $(TARGET)
 

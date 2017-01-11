@@ -1,0 +1,5 @@
+# Build folder
+bin/*.so
+bin/smarty
+bin/smarty.log
+*.o
