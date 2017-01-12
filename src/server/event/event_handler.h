@@ -14,6 +14,8 @@ class light_object_t;
 
 typedef std::vector< std::shared_ptr< smarty::event_t > > events_t;
 
+//--------------------------------------------------------------------------------------------------
+
 class event_handler_t : public device_observer_t, public smarty::event_factory_t
 {
 public:
@@ -32,13 +34,7 @@ public: // device_observer_t
 
 public: // event_factory_intf_t
     virtual std::shared_ptr< smarty::event_t >
-    create_sensor_event( uint pin, TriggerState state, uint mode );
-
-    virtual std::shared_ptr< smarty::event_t >
-    create_button_event( uint pin, TriggerState state, uint mode );
-
-    virtual std::shared_ptr< smarty::event_t >
-    create_light_event( uint pin, TriggerState state, uint mode );
+    create_device_event( DeviceEventType type, uint pin, TriggerState state, uint mode );
 
     std::shared_ptr< smarty::event_t >
     create_mode_event( uint mode, bool enabled );
@@ -55,3 +51,5 @@ private:
 
     uint m_event_modes_bitset;
 };
+
+//--------------------------------------------------------------------------------------------------

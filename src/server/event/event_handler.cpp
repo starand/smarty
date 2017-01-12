@@ -3,11 +3,10 @@
 #include <command/command_device.h>
 #include <command/command_processor.h>
 #include <device/light_object.h>
-#include <event/button_event.h>
 #include <event/event_handler.h>
 #include <event/event_parser.h>
 #include <event/mode_event.h>
-#include <event/sensor_event.h>
+#include <event/device_event.h>
 
 #include <common/driver_intf.h>
 #include <files/config.h>
@@ -90,37 +89,15 @@ void event_handler_t::notify( const device_state_t& state )
 
 /*virtual */
 std::shared_ptr< smarty::event_t >
-event_handler_t::create_sensor_event( uint pin, TriggerState state, uint mode )
+event_handler_t::create_device_event( DeviceEventType type,
+                                      uint pin, TriggerState state, uint mode )
 {
-    auto event = std::make_shared< sensor_event_t >( pin, state, mode,
+    auto event = std::make_shared< device_event_t >( type, pin, state, mode,
                                                      m_command_handler, m_device_state );
     m_device_events.emplace_back( event );
 
     LOG_TRACE( "[event.sensor] on state %u, pin #%u created", state, pin );
     return event;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-/*virtual */
-std::shared_ptr< smarty::event_t >
-event_handler_t::create_button_event( uint pin, TriggerState state, uint mode )
-{
-    auto event = std::make_shared< button_event_t >( pin, state, mode,
-                                                     m_command_handler, m_device_state );
-    m_device_events.emplace_back( event );
-
-    LOG_TRACE( "[event.button] on state %u, pin #%u created", state, pin );
-    return event;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-/*virtual */
-std::shared_ptr< smarty::event_t >
-event_handler_t::create_light_event( uint pin, TriggerState state, uint mode )
-{
-    return nullptr;
 }
 
 //--------------------------------------------------------------------------------------------------

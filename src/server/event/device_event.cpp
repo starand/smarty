@@ -2,15 +2,16 @@
 
 #include <command/command_handler.h>
 #include <device/light_object.h>
-#include <event/button_event.h>
+#include <event/device_event.h>
 
 
 //--------------------------------------------------------------------------------------------------
 
-button_event_t::button_event_t( uint pin, TriggerState trigger_state, uint mode,
-                                smarty::command_handler_t& command_handler,
+device_event_t::device_event_t( DeviceEventType type, uint pin, TriggerState trigger_state,
+                                uint mode, smarty::command_handler_t& command_handler,
                                 const device_state_t& device_state )
-    : m_button_pin( pin )
+    : m_type( type )
+    , m_pin( pin )
     , m_trigger_state( trigger_state )
     , m_mode( mode )
     , m_device_state( device_state )
@@ -21,16 +22,28 @@ button_event_t::button_event_t( uint pin, TriggerState trigger_state, uint mode,
 
 //--------------------------------------------------------------------------------------------------
 
-button_event_t::~button_event_t( )
-{
-}
-
-//--------------------------------------------------------------------------------------------------
-
 /*virtual */
-void button_event_t::on_event( )
+void device_event_t::on_event( )
 {
-    uint fired = ( m_device_state.buttons ^ m_prev_state.buttons ) & ( 1 << m_button_pin );
+    uint fired = 0;
+    bool onOff = false;
+
+    switch ( m_type )
+    {
+    case DeviceEventType::SENSOR:
+        fired = ( m_device_state.sensors ^ m_prev_state.sensors ) & ( 1 << m_pin );
+        onOff = fired & m_device_state.sensors;
+        break;
+    case DeviceEventType::BUTTON:
+        fired = ( m_device_state.buttons ^ m_prev_state.buttons ) & ( 1 << m_pin );
+        onOff = fired & m_device_state.buttons;
+        break;
+    case DeviceEventType::LIGHT:
+        fired = ( m_device_state.lights ^ m_prev_state.lights ) & ( 1 << m_pin );
+        onOff = fired & m_device_state.lights;
+        break;
+    }
+
     m_prev_state = m_device_state;
 
     if ( !fired )
@@ -38,7 +51,7 @@ void button_event_t::on_event( )
         return;
     }
 
-    TriggerState actual = fired & m_device_state.buttons ? TriggerState::HIGH : TriggerState::LOW;
+    TriggerState actual = onOff ? TriggerState::HIGH : TriggerState::LOW;
     if ( actual != m_trigger_state )
     {
         return;
@@ -53,7 +66,7 @@ void button_event_t::on_event( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-uint button_event_t::get_mode( )
+uint device_event_t::get_mode( )
 {
     return m_mode;
 }
@@ -61,7 +74,7 @@ uint button_event_t::get_mode( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void button_event_t::set_actions( std::vector< std::shared_ptr< smarty::command_t > >& acts )
+void device_event_t::set_actions( std::vector< std::shared_ptr< smarty::command_t > >& acts )
 {
     m_actions.swap( acts );
 }

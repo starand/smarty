@@ -17,11 +17,10 @@ SRC = \
 	$(SRC_DIR)/desktop/desktop_register.cpp \
 	$(SRC_DIR)/device/device_controller.cpp \
 	$(SRC_DIR)/device/light_object.cpp \
-	$(SRC_DIR)/event/button_event.cpp \
+	$(SRC_DIR)/event/device_event.cpp \
 	$(SRC_DIR)/event/event_parser.cpp \
 	$(SRC_DIR)/event/event_handler.cpp \
 	$(SRC_DIR)/event/mode_event.cpp \
-	$(SRC_DIR)/event/sensor_event.cpp \
 	$(SRC_DIR)/mobile/mobile_handler.cpp \
 	$(SRC_DIR)/mobile/mobile_register.cpp \
 	$(SRC_DIR)/server/net_server.cpp \

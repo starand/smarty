@@ -16,15 +16,14 @@ namespace smarty
 
 class light_object_t;
 
-class button_event_t : public smarty::event_t
+class device_event_t : public smarty::event_t
 {
     friend class event_handler_t;
 
 public:
-    button_event_t( uint pin, TriggerState trigger_state, uint mode,
+    device_event_t( DeviceEventType type, uint pin, TriggerState trigger_state, uint mode,
                     smarty::command_handler_t& command_handler,
                     const device_state_t& device_state );
-    ~button_event_t( );
 
 public: // event_intf_t
     virtual void on_event( );
@@ -32,7 +31,8 @@ public: // event_intf_t
     virtual void set_actions( std::vector< std::shared_ptr< smarty::command_t > >& actions );
 
 protected:
-    uint m_button_pin;
+    DeviceEventType m_type;
+    uint m_pin;
     TriggerState m_trigger_state;
     uint m_mode;
 

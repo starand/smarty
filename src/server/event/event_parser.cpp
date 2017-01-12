@@ -4,7 +4,7 @@
 #include <command/command_factory.h>
 #include <event/event_factory.h>
 #include <event/event_parser.h>
-#include <event/sensor_event.h>
+#include <event/device_event.h>
 
 #include <common/driver_intf.h>
 #include <common/enums.h>
@@ -14,16 +14,34 @@
 
 #define INVALID_PIN (uint)-1
 #define INVALID_MODE (uint)-1
+#define INVALID_TIMEOUT (uint)-1
+
+#define CHECK_RETURN_MSG( _cond_, _msg_ ) \
+    if ( _cond_ ) { \
+        LOG_ERROR( _msg_ ); \
+        return false; \
+    }
+
+#define CHECK_RETURN_FALSE( _cond_ ) \
+    if ( _cond_ ) return false;
+
 
 namespace
 {
 
 //--------------------------------------------------------------------------------------------------
 
+bool is_turned_on( const std::string& value )
+{
+    return value == "high" || value == "on" || value == "enabled" || value == "enable";
+}
+
+//--------------------------------------------------------------------------------------------------
+
 device_cmd_t get_device_cmd( Json::Value node )
 {
     return node.type( ) == Json::stringValue
-        ? node.asString( ) == "high" || node.asString( ) == "on" ? EC_TURNON : EC_TURNOFF
+        ? is_turned_on( node.asString( ) ) ? EC_TURNON : EC_TURNOFF
         : node.asUInt( ) == 1 ? EC_TURNON : EC_TURNOFF;
 }
 
@@ -32,8 +50,7 @@ device_cmd_t get_device_cmd( Json::Value node )
 TriggerState get_sensor_state( Json::Value node )
 {
     return node.type( ) == Json::stringValue
-        ? node.asString( ) == "high" || node.asString( ) == "on"
-            ? TriggerState::HIGH : TriggerState::LOW
+        ? is_turned_on( node.asString( ) ) ? TriggerState::HIGH : TriggerState::LOW
         : node.asUInt( ) == 1 ? TriggerState::HIGH : TriggerState::LOW;
 }
 
@@ -67,6 +84,94 @@ bool parse_pin_names( Json::Value node, std::map< std::string, uint >& pin_map )
 
 //--------------------------------------------------------------------------------------------------
 
+std::vector< std::string > split( const std::string& input, char delim = ' ' )
+{
+    std::vector< std::string > result;
+    if ( input.empty( ) )
+    {
+        return result;
+    }
+
+    size_t start_pos = 0, end_pos = 0;
+    while ( std::string::npos != ( end_pos = input.find( delim, start_pos ) ) )
+    {
+        result.emplace_back( input.substr( start_pos, end_pos - start_pos ) );
+        start_pos = end_pos + 1;
+    }
+
+    result.emplace_back( input.substr( start_pos ) );
+    return result;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+enum WhenEventType
+{
+    MODE_CHANGED,
+    SENSOR_TRIGGERED,
+    BUTTON_PRESSED,
+    LIGHT_TURNED,
+
+    _UNKNOWN_EVENT_
+};
+
+//--------------------------------------------------------------------------------------------------
+
+enum ThenActionType
+{
+    ENABLE_BUTTON,
+    TURN_LIGHT,
+    CHANGE_MODE,
+
+    _UNKNOWN_ACTION_
+};
+
+//--------------------------------------------------------------------------------------------------
+
+WhenEventType get_event_type( const std::string& name )
+{
+    if ( name == "mode" )
+    {
+        return MODE_CHANGED;
+    }
+    else if ( name == "sensor" )
+    {
+        return SENSOR_TRIGGERED;
+    }
+    else if ( name == "button" )
+    {
+        return BUTTON_PRESSED;
+    }
+    else if ( name == "light" )
+    {
+        return LIGHT_TURNED;
+    }
+
+    return _UNKNOWN_EVENT_;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+ThenActionType get_action_type( const std::string& name )
+{
+    if ( name == "button" )
+    {
+        return ENABLE_BUTTON;
+    }
+    else if ( name == "light" )
+    {
+        return TURN_LIGHT;
+    }
+    else if ( name == "mode" )
+    {
+        return CHANGE_MODE;
+    }
+
+    return _UNKNOWN_ACTION_;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -81,6 +186,12 @@ event_parser_t::event_parser_t( smarty::event_factory_t& event_factory,
     , m_command_factory( command_factory )
     , m_sensors( )
     , m_lights( )
+{
+}
+
+//--------------------------------------------------------------------------------------------------
+
+event_parser_t::~event_parser_t( )
 {
 }
 
@@ -141,11 +252,7 @@ bool event_parser_t::parse_event( Json::Value node )
 
 bool event_parser_t::parse_mode( Json::Value node, uint& mode )
 {
-    if ( node.isNull( ) )
-    {
-        LOG_ERROR( "Event condition not set" );
-        return false;
-    }
+    CHECK_RETURN_MSG( node.isNull( ), "Mode node is null" );
 
     mode = 0;
     auto _mode = node[ "mode" ];
@@ -186,6 +293,81 @@ uint event_parser_t::get_mode_id( const std::string& mode_name )
 
 //--------------------------------------------------------------------------------------------------
 
+std::string event_parser_t::parse_mode_text( const std::string& condition, uint& mode )
+{
+    if ( condition.empty( ) )
+    {
+        LOG_ERROR( "When condition is empty" );
+        return condition;
+    }
+
+    std::string result;
+
+    size_t pos = condition.find( " in " );
+    if ( pos != std::string::npos )
+    {
+        result = condition.substr( 0, pos );
+
+        auto words = split( condition.substr( pos + 4 ) );
+        if ( words.size( ) < 2 )
+        {
+            LOG_ERROR( "Incorrect mode name in when condition \'%s\'", condition.c_str( ) );
+        }
+        else
+        {
+            mode = get_mode_id( words[ 0 ] );
+        }
+    }
+    else
+    {
+        mode = 0;
+        result = condition;
+    }
+
+    return result;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+std::string event_parser_t::parse_timeout_text( const std::string& action, uint& timeout )
+{
+    if ( action.empty( ) )
+    {
+        LOG_ERROR( "Then action is empty" );
+        return action;
+    }
+
+    std::string result;
+
+    size_t pos = action.find( " with delay " );
+    static size_t len = strlen( " with delay " );
+
+    if ( pos != std::string::npos )
+    {
+        result = action.substr( 0, pos );
+
+        auto words = split( action.substr( pos + len ) );
+        if ( words.size( ) < 2 )
+        {
+            LOG_ERROR( "Incorrect delay in then action \'%s\'", action.c_str( ) );
+        }
+        else
+        {
+            timeout = atol( words[ 0 ].c_str( ) );
+            // TODO: support minutes/hours -- words[ 2 ]
+        }
+    }
+    else
+    {
+        timeout = 0;
+        result = action;
+    }
+
+    return result;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 const std::vector< std::string > event_parser_t::get_modes( )
 {
     return m_modes;
@@ -196,17 +378,30 @@ const std::vector< std::string > event_parser_t::get_modes( )
 bool event_parser_t::parse_actions( Json::Value node, actions_t& actions )
 {
     auto _actions = node[ "actions" ];
-    if ( _actions.isNull( ) || !_actions.size( ) )
+    if ( !_actions.isNull( ) )
     {
-        LOG_ERROR( "Event actions not set" );
-        return false;
+        return parse_actions_json( _actions, actions );
     }
 
-    actions.reserve( _actions.size( ) );
+    auto _then = node[ "then" ];
+    if ( !_then.isNull( ) )
+    {
+        return parse_actions_text( _then, actions );
+    }
+
+    LOG_ERROR( "Event actions were not set" );
+    return false;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+bool event_parser_t::parse_actions_json( Json::Value _actions, actions_t& actions )
+{
+    CHECK_RETURN_MSG( !_actions.isArray( ), "Actions node is not of array type" );
 
     for ( auto action : _actions )
     {
-        if ( !parse_action( action, actions ) )
+        if ( !parse_action_json( action, actions ) )
         {
             return false;
         }
@@ -217,39 +412,27 @@ bool event_parser_t::parse_actions( Json::Value node, actions_t& actions )
 
 //--------------------------------------------------------------------------------------------------
 
-bool event_parser_t::parse_action( Json::Value action, actions_t& actions)
+bool event_parser_t::parse_action_json( Json::Value action, actions_t& actions)
 {
     auto _target = action[ "target" ];
-    if ( _target.isNull( ) )
-    {
-        LOG_ERROR( "target not not set in action node" );
-        return false;
-    }
+    CHECK_RETURN_MSG( _target.isNull( ), "target not not set in action node" );
 
-    std::string target_str = _target.asString( );
-    TargetType target = target_type_by_name( target_str.c_str( ) );
-    if ( target == TargetType::_UNKNOWN_ )
-    {
-        LOG_ERROR( "Incorrect target type: \'%s\'", target_str.c_str( ) );
-        return false;
-    }
+    TargetType target = target_type_by_name( _target.asString( ) );
+    CHECK_RETURN_MSG( target == TargetType::_UNKNOWN_, "Incorrect target type" );
 
-    bool error = false;
     switch ( target )
     {
     case TargetType::LIGHT:
-        error = !parse_light_action( action, actions );
-        break;
+        return parse_light_action( action, actions );
     case TargetType::BUTTON:
-        error = !parse_button_action( action, actions );
-        break;
+        return parse_button_action( action, actions );
     case TargetType::SENSOR:
         ASSERT( false && "do not see for now any reasonable actions related with sensors" );
     default:
-        ASSERT( false && "TargetType switch case is not implemented" );
+        ASSERT( false && "TargetType case is not implemented" );
     }
 
-    return !error;
+    return false;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -269,14 +452,9 @@ bool event_parser_t::parse_light_action( Json::Value action, actions_t& actions 
         return false;
     }
 
-    device_cmd_t cmd = get_device_cmd( _set_state );
-    device_param_t param = 1 << light_pin;
-
     auto _delay = action[ "delay" ];
-    uint timeout = _delay.isNull( ) ? 0 : _delay.asUInt( );
-
-    auto command = m_command_factory.create_device_command( { cmd, param }, timeout );
-    actions.push_back( command );
+    add_device_command( actions, get_device_cmd( _set_state ), 1 << light_pin,
+                        _delay.isNull( ) ? 0 : _delay.asUInt( ) );
 
     return true;
 }
@@ -292,18 +470,91 @@ bool event_parser_t::parse_button_action( Json::Value action, actions_t& actions
     }
 
     auto _enable = action[ "enable" ];
-    if ( _enable.isNull( ) )
+    CHECK_RETURN_MSG( _enable.isNull( ), "enable node not set in button action" );
+
+    add_device_command( actions, _enable.asBool( ) ? EC_TURNONBUTTON : EC_TURNOFFBUTTON,
+                        1 << button_pin, 0 );
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+bool event_parser_t::parse_actions_text( Json::Value node, actions_t& actions )
+{
+    if ( node.isString( ) )
     {
-        LOG_ERROR( "enable node not set in button action" );
+        return parse_action_text( node, actions );
+    }
+
+    if ( node.isArray( ) )
+    {
+        return parse_actions_array_text( node, actions );
+    }
+
+    LOG_ERROR( "Incorrect type of \'then\' node" );
+    return false;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+bool event_parser_t::parse_action_text( Json::Value node, actions_t& actions )
+{
+    CHECK_RETURN_MSG( !node.isString( ), "text action is of incorrect type" );
+
+    uint timeout = INVALID_TIMEOUT;
+    auto action = parse_timeout_text( node.asString( ), timeout );
+    CHECK_RETURN_MSG( timeout == INVALID_TIMEOUT,
+                      ( "Incorrect delay string \'%s\'" + node.asString( ) ).c_str( ) );
+
+    auto words = split( action );
+    CHECK_RETURN_MSG( words.size( ) < 3,
+        ( "too few words in then action: " + node.asString( ) ).c_str( ) );
+
+    size_t last = words.size( ) - 1;
+    const auto& type = words[ last ];
+    const auto& name = words[ last - 1 ];
+    bool turned_on = is_turned_on( words[ last - 2 ] );
+
+    uint pin = INVALID_PIN;
+    switch ( get_action_type( type ) )
+    {
+    case ENABLE_BUTTON:
+        pin = parse_light_pin( name );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid button name in then action" );
+        add_device_command( actions, turned_on ? EC_TURNONBUTTON : EC_TURNOFFBUTTON,
+                            static_cast< device_param_t >( 1 << pin ) , timeout );
+        break;
+    case TURN_LIGHT:
+        pin = parse_light_pin( name );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid light name in then action" );
+        add_device_command( actions, turned_on ? EC_TURNON : EC_TURNOFF,
+                            static_cast< device_param_t >( 1 << pin ) , timeout );
+        break;
+    case CHANGE_MODE:
+        pin = get_mode_id( name );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid mode name in then action" );
+        ASSERT( false && "Change Mode action Not implemented yet ");
+        break;
+    case _UNKNOWN_ACTION_:
+        LOG_ERROR( "Unknown then action type: \'%s\'", type.c_str( ) );
         return false;
     }
 
-    device_param_t param = 1 << button_pin;
-    bool enable = _enable.asBool( );
+    return true;
+}
 
-    device_cmd_t cmd = enable ? EC_TURNONBUTTON : EC_TURNOFFBUTTON;
-    auto command = m_command_factory.create_device_command( { cmd, param }, 0 );
-    actions.push_back( command );
+//--------------------------------------------------------------------------------------------------
+
+bool event_parser_t::parse_actions_array_text( Json::Value _actions, actions_t& actions )
+{
+    for ( auto action : _actions )
+    {
+        if ( !parse_actions_text( action, actions ) )
+        {
+            return false;
+        }
+    }
 
     return true;
 }
@@ -313,19 +564,39 @@ bool event_parser_t::parse_button_action( Json::Value action, actions_t& actions
 bool event_parser_t::parse_condition( Json::Value node, std::shared_ptr< smarty::event_t >& event )
 {
     auto _condition = node[ "condition" ];
+    if ( !_condition.isNull( ) )
+    {
+        return parse_condition_json( _condition, event );
+    }
+
+    auto _when = node[ "when" ];
+    if ( !_when.isNull( ) )
+    {
+        return parse_condition_text( _when, event );
+    }
+
+    LOG_ERROR( "Event condition was not set" );
+    return false;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+bool event_parser_t::parse_condition_json( Json::Value node,
+                                           std::shared_ptr< smarty::event_t >& event )
+{
     uint event_mode;
-    if ( !parse_mode( _condition, event_mode ) )
+    if ( !parse_mode( node, event_mode ) )
     {
         return false;
     }
 
-    auto _device = _condition[ "device" ];
+    auto _device = node[ "device" ];
     if ( !_device.isNull( ) )
     {
         return parse_device_condition( _device, event, event_mode );
     }
 
-    auto _mode = _condition[ "mode_change" ];
+    auto _mode = node[ "mode_change" ];
     if ( !_mode.isNull( ) )
     {
         return parse_mode_condition( _mode, event );
@@ -337,23 +608,74 @@ bool event_parser_t::parse_condition( Json::Value node, std::shared_ptr< smarty:
 
 //--------------------------------------------------------------------------------------------------
 
+bool event_parser_t::parse_condition_text( Json::Value node,
+                                           std::shared_ptr< smarty::event_t >& event )
+{
+    CHECK_RETURN_MSG( !node.isString( ), "when node is not of string type" );
+
+    uint event_mode = INVALID_MODE;
+    std::string condition = parse_mode_text( node.asString( ), event_mode );
+    CHECK_RETURN_MSG( event_mode == INVALID_MODE,
+                      ( "Invalid mode in when condition" + node.asString( ) ).c_str( ) );
+
+    auto words = split( condition );
+    CHECK_RETURN_MSG( words.size( ) < 3,
+        ( "too few words in when condition: " + node.asString( ) ).c_str( ) );
+
+    const auto& type = words[ 1 ];
+    const auto& name = words[ 0 ];
+    // take last word
+    size_t last = words.size( ) - 1;
+
+    TriggerState turned_on = is_turned_on( words[ last ] ) ? TriggerState::HIGH : TriggerState::LOW;
+
+    uint pin = INVALID_PIN;
+    switch ( get_event_type( type ) )
+    {
+    case MODE_CHANGED:
+        pin = get_mode_id( name );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid mode name in when node" );
+        event = m_event_factory.create_mode_event( pin, turned_on == TriggerState::HIGH );
+        break;
+    case SENSOR_TRIGGERED:
+        pin = parse_sensor_pin( name );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid sensor name in when node" );
+        event = m_event_factory.create_device_event(
+                    DeviceEventType::SENSOR, pin, turned_on, event_mode );
+        break;
+    case BUTTON_PRESSED:
+        pin = parse_light_pin( name );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid button name in when node" );
+        event = m_event_factory.create_device_event(
+                    DeviceEventType::BUTTON, pin, turned_on, event_mode );
+        break;
+    case LIGHT_TURNED:
+        pin = parse_light_pin( name );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid light name in when node" );
+        event = m_event_factory.create_device_event(
+                    DeviceEventType::BUTTON, pin, turned_on, event_mode );
+        break;
+    case _UNKNOWN_EVENT_:
+        LOG_ERROR( "Unknown when condition type: \'%s\'", type.c_str( ) );
+        return false;
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 bool event_parser_t::parse_device_condition( Json::Value node,
                                              std::shared_ptr< smarty::event_t >& event, uint mode )
 {
     auto _type = node[ "type" ];
-    if ( _type.isNull( ) )
-    {
-        LOG_ERROR( "Device/type node not set in event node" );
-        return false;
-    }
+    CHECK_RETURN_MSG( _type.isNull( ), "Device/type node not set in event node" );
 
     const std::string type = _type.asString( );
     DeviceEventType event_type = device_event_type_by_name( type );
-    if ( event_type == DeviceEventType::_UNKNOWN_ )
-    {
-        LOG_ERROR( "Incorrect device/type node type \'%s\'", type.c_str( ) );
-        return false;
-    }
+
+    CHECK_RETURN_MSG( event_type == DeviceEventType::_UNKNOWN_,
+                    ( "Incorrect device/type node type: " + type ).c_str( ) );
 
     uint pin = INVALID_PIN;
     switch ( event_type )
@@ -365,38 +687,15 @@ bool event_parser_t::parse_device_condition( Json::Value node,
     case DeviceEventType::LIGHT:
         pin = parse_light_pin( node );
         break;
-    case DeviceEventType::_UNKNOWN_:
-        break;
     }
 
-    if ( pin == INVALID_PIN )
-    {
-        return false;
-    }
+    CHECK_RETURN_FALSE( pin == INVALID_PIN );
 
     auto _state = node[ "state" ];
-    if ( _state.isNull( ) )
-    {
-        LOG_ERROR( "State node not set in sensor node" );
-        return false;
-    }
+    CHECK_RETURN_MSG( _state.isNull( ), "State node not set in sensor node" );
 
     TriggerState trigger_state = get_sensor_state( _state );
-
-    switch ( event_type )
-    {
-    case DeviceEventType::SENSOR:
-        event = m_event_factory.create_sensor_event( pin, trigger_state, mode );
-        break;
-    case DeviceEventType::BUTTON:
-        event = m_event_factory.create_button_event( pin, trigger_state, mode );
-        break;
-    case DeviceEventType::LIGHT:
-        event = m_event_factory.create_light_event( pin, trigger_state, mode );
-        break;
-    default:
-        ASSERT( false && "Incorrect device event type" );
-    }
+    event = m_event_factory.create_device_event( event_type, pin, trigger_state, mode );
 
     return true;
 }
@@ -447,15 +746,7 @@ uint event_parser_t::parse_sensor_pin( Json::Value node )
     }
     else if ( !_name.isNull( ) && _name.isString( ) )
     {
-        const std::string name = _name.asString( );
-        auto it = m_sensors.find( name );
-        if ( it == m_sensors.end( ) )
-        {
-            LOG_ERROR( "Sensor with name \'%s\' does not exist", name.c_str( ) );
-            return INVALID_PIN;
-        }
-
-        pin = it->second - 1;
+        pin = parse_sensor_pin( _name.asString( ) );
     }
     else
     {
@@ -464,6 +755,20 @@ uint event_parser_t::parse_sensor_pin( Json::Value node )
     }
 
     return pin;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+uint event_parser_t::parse_sensor_pin( const std::string& name )
+{
+    auto it = m_sensors.find( name );
+    if ( it == m_sensors.end( ) )
+    {
+        LOG_ERROR( "Sensor with name \'%s\' does not exist", name.c_str( ) );
+        return INVALID_PIN;
+    }
+
+    return it->second - 1;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -480,15 +785,7 @@ uint event_parser_t::parse_light_pin( Json::Value node )
     }
     else if ( !_name.isNull( ) && _name.isString( ) )
     {
-        const std::string name = _name.asString( );
-        auto it = m_lights.find( name );
-        if ( it == m_lights.end( ) )
-        {
-            LOG_ERROR( "Light with name \'%s\' does not exist", name.c_str( ) );
-            return INVALID_PIN;
-        }
-
-        pin = it->second - 1;
+        pin = parse_light_pin( _name.asString( ) );
     }
     else
     {
@@ -497,6 +794,20 @@ uint event_parser_t::parse_light_pin( Json::Value node )
     }
 
     return pin;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+uint event_parser_t::parse_light_pin( const std::string& name )
+{
+    auto it = m_lights.find( name );
+    if ( it == m_lights.end( ) )
+    {
+        LOG_ERROR( "Light with name \'%s\' does not exist", name.c_str( ) );
+        return INVALID_PIN;
+    }
+
+    return it->second - 1;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -525,6 +836,14 @@ bool event_parser_t::parse_modes( Json::Value node )
     }
 
     return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void event_parser_t::add_device_command( actions_t& actions,
+                                         device_cmd_t cmd, device_param_t param, uint timeout )
+{
+    actions.push_back( m_command_factory.create_device_command( { cmd, param }, timeout ) );
 }
 
 //--------------------------------------------------------------------------------------------------
