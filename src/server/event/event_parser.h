@@ -49,8 +49,6 @@ private:
     bool parse_actions( Json::Value node, actions_t& actions );
     bool parse_actions_json( Json::Value node, actions_t& actions );
     bool parse_action_json( Json::Value action, actions_t& actions);
-    bool parse_light_action( Json::Value action, actions_t& actions );
-    bool parse_button_action( Json::Value action, actions_t& actions );
     bool parse_actions_text( Json::Value node, actions_t& actions );
     bool parse_action_text( Json::Value node, actions_t& actions );
     bool parse_actions_array_text( Json::Value node, actions_t& actions );

@@ -58,11 +58,7 @@ TriggerState get_sensor_state( Json::Value node )
 
 bool parse_pin_names( Json::Value node, std::map< std::string, uint >& pin_map )
 {
-    if ( node.isNull( ) )
-    {
-        LOG_ERROR("Modes node does not exist");
-        return false;
-    }
+    CHECK_RETURN_MSG( node.isNull( ), "Modes node does not exist" );
 
     pin_map.clear( );
     for ( auto mode : node )
@@ -70,11 +66,8 @@ bool parse_pin_names( Json::Value node, std::map< std::string, uint >& pin_map )
         auto _name = mode[ "name" ];
         auto _pin = mode[ "pin" ];
 
-        if ( _name.isNull( ) || _pin.isNull( ) || !_name.isString( ) )
-        {
-            LOG_ERROR( "Name or pin node does not exist or is of improper type" );
-            return false;
-        }
+        CHECK_RETURN_MSG( _name.isNull( ) || _pin.isNull( ) || !_name.isString( ), 
+                          "Name or pin node does not exist or is of improper type" );
 
         pin_map.insert( { _name.asString( ), _pin.asUInt( ) } );
     }
@@ -415,67 +408,35 @@ bool event_parser_t::parse_actions_json( Json::Value _actions, actions_t& action
 bool event_parser_t::parse_action_json( Json::Value action, actions_t& actions)
 {
     auto _target = action[ "target" ];
-    CHECK_RETURN_MSG( _target.isNull( ), "target not not set in action node" );
+    CHECK_RETURN_MSG( _target.isNull( ), "\'target\' not not set in action node" );
+    auto _turn_on = action[ "turn on" ];
+    CHECK_RETURN_MSG( _turn_on.isNull( ), " \'turn on\' node not set in button action" );
 
-    TargetType target = target_type_by_name( _target.asString( ) );
-    CHECK_RETURN_MSG( target == TargetType::_UNKNOWN_, "Incorrect target type" );
+    auto _delay = action[ "delay" ];
+    uint delay = _delay.isNull( ) ? 0 : _delay.asUInt( );
 
-    switch ( target )
+    uint pin = INVALID_PIN;
+    switch ( get_action_type( _target.asString( ) ) )
     {
-    case TargetType::LIGHT:
-        return parse_light_action( action, actions );
-    case TargetType::BUTTON:
-        return parse_button_action( action, actions );
-    case TargetType::SENSOR:
-        ASSERT( false && "do not see for now any reasonable actions related with sensors" );
+    case TURN_LIGHT:
+        pin = parse_light_pin( action );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid light name in light action" );
+        add_device_command( actions, get_device_cmd( _turn_on ), 1 << pin, delay );
+        break;
+    case ENABLE_BUTTON:
+        pin = parse_light_pin( action );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid button name in button action" );
+        add_device_command( actions, _turn_on.asBool( ) ? EC_TURNONBUTTON : EC_TURNOFFBUTTON,
+                            1 << pin, delay );
+        break;
+    case CHANGE_MODE:
+        ASSERT( false && "Change Mode action Not implemented yet ");
+        break;
     default:
         ASSERT( false && "TargetType case is not implemented" );
     }
 
     return false;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-bool event_parser_t::parse_light_action( Json::Value action, actions_t& actions )
-{
-    uint light_pin = parse_light_pin( action );
-    if ( light_pin == INVALID_PIN )
-    {
-        return false;
-    }
-
-    auto _set_state = action[ "set_state" ];
-    if ( _set_state.isNull( ) )
-    {
-        LOG_ERROR( "set_state node not set in light action" );
-        return false;
-    }
-
-    auto _delay = action[ "delay" ];
-    add_device_command( actions, get_device_cmd( _set_state ), 1 << light_pin,
-                        _delay.isNull( ) ? 0 : _delay.asUInt( ) );
-
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-bool event_parser_t::parse_button_action( Json::Value action, actions_t& actions )
-{
-    uint button_pin = parse_light_pin( action );
-    if ( button_pin == INVALID_PIN )
-    {
-        return false;
-    }
-
-    auto _enable = action[ "enable" ];
-    CHECK_RETURN_MSG( _enable.isNull( ), "enable node not set in button action" );
-
-    add_device_command( actions, _enable.asBool( ) ? EC_TURNONBUTTON : EC_TURNOFFBUTTON,
-                        1 << button_pin, 0 );
-
-    return true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -706,25 +667,14 @@ bool event_parser_t::parse_mode_condition( Json::Value node,
                                            std::shared_ptr< smarty::event_t >& event )
 {
     auto _name = node[ "name" ];
-    if ( _name.isNull( ) )
-    {
-        LOG_ERROR( "Mode name not set in event node" );
-        return false;
-    }
+    CHECK_RETURN_MSG( _name.isNull( ), "Mode name not set in event node" );
 
     uint mode_id = get_mode_id( _name.asString( ) );
-    if ( mode_id == INVALID_MODE )
-    {
-        LOG_ERROR("Event mode \'%s\' name does not exist", _name.asString( ).c_str( ) );
-        return false;
-    }
+    CHECK_RETURN_MSG( mode_id == INVALID_MODE,
+                      ( "Event mode " + _name.asString( ) + " name does not exist" ).c_str( ) );
 
     auto _changed_to = node[ "to" ];
-    if ( _changed_to.isNull() )
-    {
-        LOG_ERROR( "Mode event \'to\' attribute not set in event node" );
-        return false;
-    }
+    CHECK_RETURN_MSG( _changed_to.isNull(), "Mode event \'to\' attribute not set in event node" );
 
     bool enabled = _changed_to.asString() == "on";
     event = m_event_factory.create_mode_event( mode_id, enabled );
@@ -814,11 +764,7 @@ uint event_parser_t::parse_light_pin( const std::string& name )
 
 bool event_parser_t::parse_modes( Json::Value node )
 {
-    if ( node.isNull( ) )
-    {
-        LOG_ERROR("Modes node does not exist");
-        return false;
-    }
+    CHECK_RETURN_MSG( node.isNull( ), "Modes node does not exist" );
 
     m_modes.clear( );
     m_modes.emplace_back( "all" );
@@ -826,11 +772,8 @@ bool event_parser_t::parse_modes( Json::Value node )
     for ( auto mode : node )
     {
         auto _name = mode[ "name" ];
-        if ( _name.isNull( ) || !_name.isString( ) )
-        {
-            LOG_ERROR( "Mode name does not exist or is not string" );
-            return false;
-        }
+        CHECK_RETURN_MSG( _name.isNull( ) || !_name.isString( ),
+                          "Mode name does not exist or is not string" );
 
         m_modes.emplace_back( _name.asString() );
     }
