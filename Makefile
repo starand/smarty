@@ -46,13 +46,11 @@ desktop:
 	
 
 clean :
-	-@$(MAKE) $(MAKE_FLAGS) projects/ clean || exit 1
 	-@$(MAKE) $(MAKE_FLAGS) src/mc/ clean || exit 1
 	-@$(MAKE) $(MAKE_FLAGS) src/smarty/ clean || exit 1
 	-@$(MAKE) $(MAKE_FLAGS) src/driver/ clean || exit 1
 	-@$(MAKE) $(MAKE_FLAGS) src/server/ clean || exit 1
 	-@$(MAKE) $(MAKE_FLAGS) src/libclient/ clean || exit 1
-	-@rm -rf bin projects/Debug
 
 rebuild : clean build
 	-@cp ./cfg/* ./bin/

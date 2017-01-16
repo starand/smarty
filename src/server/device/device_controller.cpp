@@ -21,6 +21,7 @@ device_controller_t::device_controller_t( driver_intf_t& driver, smarty_config_t
     , m_device_state( state )
     , m_update_event( true, false )
     , m_prev_device_state( state )
+    , m_observers( )
 {
     m_driver.get_state( m_device_state );
     create_internal_objects( );
@@ -94,9 +95,27 @@ void device_controller_t::do_stop( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void device_controller_t::notify( const device_state_t& state )
+void device_controller_t::on_light_changed( const lights_state_t& state )
 {
-    m_device_state = state;
+    m_device_state.lights = state;
+    m_update_event.set( ); // notify about changes
+}
+
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
+void device_controller_t::on_button_pressed( const buttons_state_t& state )
+{
+    m_device_state.buttons = state;
+    m_update_event.set( ); // notify about changes
+}
+
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
+void device_controller_t::on_sensor_triggered( const sensors_state_t& state )
+{
+    m_device_state.sensors = state;
     m_update_event.set( ); // notify about changes
 }
 
@@ -130,6 +149,20 @@ ErrorCode device_controller_t::execute_command( const device_command_t& cmd )
 
 //--------------------------------------------------------------------------------------------------
 
+void device_controller_t::add_observer( device_observer_t& observer )
+{
+    m_observers.insert( &observer );
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void device_controller_t::remove_observer( device_observer_t& observer )
+{
+    m_observers.erase( &observer );
+}
+
+//--------------------------------------------------------------------------------------------------
+
 void device_controller_t::check_for_changes( )
 {
     check_lights_changes( );
@@ -148,6 +181,11 @@ void device_controller_t::check_buttons_changes( )
 
     if ( prev_state != current_state )
     {
+        for ( auto& observer : m_observers )
+        {
+            observer->on_button_pressed( m_device_state.buttons );
+        }
+
         uchar changed = prev_state ^ current_state;
         string names = m_config.get_light_names( changed );
 
@@ -165,6 +203,11 @@ void device_controller_t::check_lights_changes( )
 
     if ( prev_state != current_state )
     {
+        for ( auto& observer : m_observers )
+        {
+            observer->on_light_changed( m_device_state.lights );
+        }
+
         uchar changed = prev_state ^ current_state;
         string names = m_config.get_light_names( changed );
 
@@ -182,6 +225,11 @@ void device_controller_t::check_sensors_changes( )
 
     if ( prev_state != current_state )
     {
+        for ( auto& observer : m_observers )
+        {
+            observer->on_sensor_triggered( m_device_state.sensors );
+        }
+
         uchar changed = prev_state ^ current_state;
         string names = m_config.get_sensor_names( changed );
 

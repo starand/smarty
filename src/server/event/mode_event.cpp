@@ -56,7 +56,7 @@ void mode_event_t::on_event( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-uint mode_event_t::get_mode( )
+uint mode_event_t::get_mode( ) const
 {
     return 0;
 }

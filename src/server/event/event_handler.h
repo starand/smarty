@@ -30,7 +30,9 @@ public:
     uint get_modes_bitset( ) const;
 
 public: // device_observer_t
-    virtual void notify( const device_state_t& state );
+    virtual void on_light_changed( const lights_state_t& state );
+    virtual void on_button_pressed( const buttons_state_t& state );
+    virtual void on_sensor_triggered( const sensors_state_t& state );
 
 public: // event_factory_intf_t
     virtual std::shared_ptr< smarty::event_t >
@@ -40,13 +42,18 @@ public: // event_factory_intf_t
     create_mode_event( uint mode, bool enabled );
 
 private:
+    bool check_mode( const smarty::event_t& handler ) const;
+
+private:
     const config_t& m_config;
     std::unique_ptr< event_parser_t > m_event_parser;
 
     command_processor_t& m_command_handler;
     device_state_t m_device_state;
 
-    events_t m_device_events;
+    events_t m_light_events;
+    events_t m_button_events;
+    events_t m_sensor_events;
     events_t m_mode_events;
 
     uint m_event_modes_bitset;

@@ -18,7 +18,7 @@ public:
 
     virtual void on_event( ) = 0;
 
-    virtual uint get_mode( ) = 0;
+    virtual uint get_mode( ) const = 0;
     virtual void set_actions( std::vector< std::shared_ptr< smarty::command_t > >& actions ) = 0;
 };
 

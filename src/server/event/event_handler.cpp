@@ -23,7 +23,9 @@ event_handler_t::event_handler_t( const config_t& config, command_processor_t& c
     , m_event_parser( new event_parser_t( *this, command_handler ) )
     , m_command_handler( command_handler )
     , m_device_state( state )
-    , m_device_events( )
+    , m_light_events( )
+    , m_button_events( )
+    , m_sensor_events( )
     , m_mode_events( )
     , m_event_modes_bitset( 0 )
 {
@@ -70,15 +72,42 @@ uint event_handler_t::get_modes_bitset( ) const
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void event_handler_t::notify( const device_state_t& state )
+void event_handler_t::on_light_changed( const lights_state_t& state )
 {
-    m_device_state = state;
-    for ( auto& handler : m_device_events )
+    m_device_state.lights = state;
+    for ( auto& handler : m_light_events )
     {
-        bool mode_enabled = ( m_event_modes_bitset & handler->get_mode( ) ) != 0;
+        if ( check_mode( *handler ) )
+        {
+            handler->on_event( );
+        }
+    }
+}
 
-        // if mode is 'all' or is enabled
-        if ( handler->get_mode( ) == 0 || mode_enabled )
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
+void event_handler_t::on_button_pressed( const buttons_state_t& state )
+{
+    m_device_state.buttons = state;
+    for ( auto& handler : m_button_events )
+    {
+        if ( check_mode( *handler ) )
+        {
+            handler->on_event( );
+        }
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
+void event_handler_t::on_sensor_triggered( const sensors_state_t& state )
+{
+    m_device_state.sensors = state;
+    for ( auto& handler : m_sensor_events )
+    {
+        if ( check_mode( *handler ) )
         {
             handler->on_event( );
         }
@@ -94,9 +123,24 @@ event_handler_t::create_device_event( DeviceEventType type,
 {
     auto event = std::make_shared< device_event_t >( type, pin, state, mode,
                                                      m_command_handler, m_device_state );
-    m_device_events.emplace_back( event );
+    switch ( type )
+    {
+    case DeviceEventType::LIGHT:
+        m_light_events.emplace_back( event );
+        LOG_TRACE( "[event.light] on state %u, pin #%u created", state, pin );
+        break;
+    case DeviceEventType::BUTTON:
+        m_button_events.emplace_back( event );
+        LOG_TRACE( "[event.button] on state %u, pin #%u created", state, pin );
+        break;
+    case DeviceEventType::SENSOR:
+        m_sensor_events.emplace_back( event );
+        LOG_TRACE( "[event.sensor] on state %u, pin #%u created", state, pin );
+        break;
+    default:
+        ASSERT( false && "Unsupported device event" );
+    }
 
-    LOG_TRACE( "[event.sensor] on state %u, pin #%u created", state, pin );
     return event;
 }
 
@@ -112,6 +156,14 @@ event_handler_t::create_mode_event( uint mode, bool enabled )
 
     LOG_TRACE( "[event.mode] on mode %u, changed to \'%s\'", mode, ( enabled ? "on" : "off" ) );
     return event;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+bool event_handler_t::check_mode( const smarty::event_t& handler ) const
+{
+    uint mode = handler.get_mode( );
+    return ( m_event_modes_bitset & mode ) != 0 || mode == 0;
 }
 
 //--------------------------------------------------------------------------------------------------

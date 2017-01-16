@@ -28,7 +28,7 @@ public:
 
 public: // event_intf_t
     virtual void on_event( );
-    virtual uint get_mode( );
+    virtual uint get_mode( ) const;
     virtual void set_actions( std::vector< std::shared_ptr< smarty::command_t > >& actions );
 
 protected:

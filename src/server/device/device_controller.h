@@ -6,6 +6,9 @@
 
 #include <threading.h>
 
+#include <memory>
+#include <set>
+
 
 class driver_intf_t;
 class event_t;
@@ -31,7 +34,9 @@ public: // thread_base_t methods
     virtual void do_stop( );
 
 public: // device_observer_t methods
-    virtual void notify( const device_state_t& state );
+    virtual void on_light_changed( const lights_state_t& state );
+    virtual void on_button_pressed( const buttons_state_t& state );
+    virtual void on_sensor_triggered( const sensors_state_t& state );
 
 public:
     lights_state_t get_lights_state( );
@@ -39,6 +44,9 @@ public:
 
     ErrorCode execute_command( device_cmd_t command, device_param_t param );
     ErrorCode execute_command( const device_command_t& cmd );
+
+    void add_observer( device_observer_t& observer );
+    void remove_observer( device_observer_t& observer );
 
 private:
     void check_for_changes( );
@@ -53,6 +61,8 @@ private:
     device_state_t m_device_state;
     event_t m_update_event;
     device_state_t m_prev_device_state;
+
+    std::set< device_observer_t* > m_observers;
 };
 
 #endif // __STATE_CHECKER_H_INCLUDED

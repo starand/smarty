@@ -1,9 +1,7 @@
 TARGET = driver.so
 
-FW_DIR = ../../../../../framework
+FW_DIR = ../../../cpp_fw
 RASPI_DIR = $(FW_DIR)/dev/raspberry
-PROJECTS = ../../projects
-COMMON_DIR = ../common
 
 SRC_DIR = .
 BIN_DIR = ../../bin
@@ -25,10 +23,17 @@ DEPS = $(FW_DIR)/common/asserts.h
 
 OBJS = $(subst .cpp,.o, $(SRC))
 
-INCLUDES = -I. -I.. -I../common \
-	-I$(RASPI_DIR) -I$(RASPI_DIR)/.. -I$(COMMON_DIR)/.. \
-	-I$(FW_DIR)/types -I$(FW_DIR)/common -I$(FW_DIR)/utils -I$(FW_DIR)/utils/threading \
-	-I$(FW_DIR)/utils/net -I$(FW_DIR)/utils/files
+INCLUDES = -I. \
+	-I.. \
+	-I../common \
+	-I$(RASPI_DIR) \
+	-I$(RASPI_DIR)/.. \
+	-I$(FW_DIR)/types \
+	-I$(FW_DIR)/common \
+	-I$(FW_DIR)/utils \
+	-I$(FW_DIR)/utils/threading \
+	-I$(FW_DIR)/utils/net \
+	-I$(FW_DIR)/utils/files
 
 CXX=g++
 CXXFLAGS = $(INCLUDES) \
@@ -49,7 +54,6 @@ $(TARGET): $(OBJS)
 
 clean :
 	-@rm -rf $(OBJS) $(BIN_DIR)/$(TARGET)
-	-@rm -rf $(PROJECTS)/*.suo $(PROJECTS)/*.sdf $(PROJECTS)/projects/*.user $(PROJECTS)/driver/Debug
 
 rebuild : clean $(TARGET)
 

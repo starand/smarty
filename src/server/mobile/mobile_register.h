@@ -29,7 +29,9 @@ protected: // client_heartbeat_t
     virtual void check_liveness( );
 
 public: // device_observer_t
-    virtual void notify( const device_state_t& state );
+    virtual void on_light_changed( const lights_state_t& state );
+    virtual void on_button_pressed( const buttons_state_t& state );
+    virtual void on_sensor_triggered( const sensors_state_t& state );
 
 public:
     bool update_config( socket_t& client );
@@ -43,7 +45,7 @@ public:
     void set_heartbeat_lasttime( socket_t *socket );
 
 private:
-    void update_clients( const device_state_t& state );
+    void update_clients( const lights_state_t& state );
 
     void execute_desktop_command( const desktop_command_request_t& command );
 

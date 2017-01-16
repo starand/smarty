@@ -66,7 +66,7 @@ void device_event_t::on_event( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-uint device_event_t::get_mode( )
+uint device_event_t::get_mode( ) const
 {
     return m_mode;
 }

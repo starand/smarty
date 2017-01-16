@@ -128,7 +128,7 @@ void device_controller_t::do_execute_command( const device_command_t& command )
     device_command_t cmd = { command.cmd, command.param };
 
     mutex_locker_t lock( m_device_lock );
-    // two stage command execution needed because of 0xFF value  MC returns incorrect state
+    // two stage command execution needed because of 0xFF value MC returns incorrect state
     if ( cmd.param == 0xFF )
     {
         cmd.param = 0x0F;
@@ -138,20 +138,31 @@ void device_controller_t::do_execute_command( const device_command_t& command )
 
     if ( m_device->execute_command( cmd, state ) && m_device_state != state )
     {
+        if ( m_device_state.lights != state.lights )
+        {
+            for ( auto& observer : m_observers_list )
+            {
+                observer->on_light_changed( state.lights );
+            }
+        }
+
+        if ( m_device_state.buttons != state.buttons )
+        {
+            for ( auto& observer : m_observers_list )
+            {
+                observer->on_button_pressed( state.buttons );
+            }
+        }
+
+        if ( m_device_state.sensors != state.sensors )
+        {
+            for ( auto& observer : m_observers_list )
+            {
+                observer->on_sensor_triggered( state.sensors );
+            }
+        }
+
         m_device_state = state;
-        notify_observers( );
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void device_controller_t::notify_observers( ) const
-{
-    device_observer_list_t::const_iterator iter = m_observers_list.begin( );
-
-    for ( ; iter != m_observers_list.end( ); ++iter )
-    {
-        ( *iter )->notify( m_device_state );
     }
 }
 

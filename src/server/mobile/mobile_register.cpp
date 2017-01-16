@@ -58,12 +58,28 @@ void mobile_register_t::check_liveness( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void mobile_register_t::notify( const device_state_t& state )
+void mobile_register_t::on_light_changed( const lights_state_t& state )
 {
     if ( !m_client_list.empty( ) )
     {
         update_clients( state );
     }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
+void mobile_register_t::on_button_pressed( const buttons_state_t& state )
+{
+
+}
+
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
+void mobile_register_t::on_sensor_triggered( const sensors_state_t& state )
+{
+
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -189,10 +205,10 @@ void mobile_register_t::set_heartbeat_lasttime( socket_t *socket )
 
 //--------------------------------------------------------------------------------------------------
 
-void mobile_register_t::update_clients( const device_state_t& state )
+void mobile_register_t::update_clients( const lights_state_t& state )
 {
     light_notification_t notification;
-    notification.lights_state = static_cast< uchar >( state.lights );
+    notification.lights_state = static_cast< uchar >( state );
 
     mutex_locker_t lock( m_client_list_mutex );
     client_list_t::iterator itList = m_client_list.begin( );
@@ -216,7 +232,7 @@ void mobile_register_t::update_clients( const device_state_t& state )
         }
     }
 
-    m_prev_state = state;
+    m_prev_state.lights = state;
 }
 
 //--------------------------------------------------------------------------------------------------

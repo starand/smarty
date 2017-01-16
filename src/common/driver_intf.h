@@ -49,7 +49,9 @@ class device_observer_t
 public:
     virtual ~device_observer_t( ) { }
 
-    virtual void notify( const device_state_t& state ) = 0; // this method should be fast
+    virtual void on_light_changed( const lights_state_t& state ) = 0;
+    virtual void on_button_pressed( const buttons_state_t& state ) = 0;
+    virtual void on_sensor_triggered( const sensors_state_t& state ) = 0;
 };
 
 class driver_intf_t

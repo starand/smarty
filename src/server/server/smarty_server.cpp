@@ -95,13 +95,15 @@ bool smarty_server_t::start_mobile_register( const device_state_t& state )
     ASSERT( m_driver.get( ) != nullptr );
     ASSERT( m_config.get( ) != nullptr );
 
-    m_mobile_register.reset( new mobile_register_t( *this, *m_config, state ) );
+    mobile_register_t* reg = new mobile_register_t( *this, *m_config, state );
+
+    m_mobile_register.reset( reg );
     if ( !m_mobile_register->start( ) )
     {
         ASSERT_FAIL( "Unable to start mobile register" );
     }
 
-    m_driver->add_observer( *m_mobile_register );
+    m_device_controller->add_observer( *reg );
     return true;
 }
 
@@ -112,7 +114,7 @@ void smarty_server_t::stop_mobile_register( )
     ASSERT( m_mobile_register.get( ) != nullptr );
     ASSERT( m_driver.get( ) != nullptr );
 
-    m_driver->remove_observer( *m_mobile_register );
+    m_device_controller->remove_observer( *m_mobile_register );
     m_mobile_register->stop( );
     m_mobile_register->wait( );
 }
@@ -207,13 +209,15 @@ bool smarty_server_t::start_event_handler( const device_state_t& state )
     ASSERT( m_config.get( ) != nullptr );
     ASSERT( m_driver.get( ) != nullptr );
 
-    m_event_handler.reset( new event_handler_t( *m_config, *m_command_handler, state ) );
+    event_handler_t* handler = new event_handler_t( *m_config, *m_command_handler, state );
+
+    m_event_handler.reset( handler );
     if ( !m_event_handler->init( ) )
     {
         ASSERT_FAIL( "Unable to start event handler" );
     }
 
-    m_driver->add_observer( *m_event_handler );
+    m_device_controller->add_observer( *handler );
     return true;
 }
 
@@ -224,7 +228,7 @@ void smarty_server_t::stop_event_handler( )
     ASSERT( m_event_handler.get( ) != nullptr );
     ASSERT( m_driver.get( ) != nullptr );
 
-    m_driver->remove_observer( *m_event_handler );
+    m_device_controller->remove_observer( *m_event_handler );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -302,8 +306,8 @@ ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
         return ErrorCode::OPERATION_FAILED;;
     }
 
-    return start_command_handler( ) && start_event_handler( state ) &&
-           start_device_controller( state ) && start_mobile_register( state ) &&
+    return start_command_handler( ) && start_device_controller( state ) &&
+           start_event_handler( state ) && start_mobile_register( state ) &&
            start_desktop_register( ) && start_client_handlers( ) && start_net_server( )
            ? ErrorCode::OK : ErrorCode::OPERATION_FAILED;
 }

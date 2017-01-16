@@ -32,7 +32,6 @@ public: // thread_base_t implementation
 
 private:
     void do_execute_command( const device_command_t& command );
-    void notify_observers( ) const;
 
 private:
     typedef std::set<device_observer_t *> device_observer_list_t;
