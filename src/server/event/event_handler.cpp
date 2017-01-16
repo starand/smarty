@@ -116,7 +116,7 @@ void event_handler_t::on_sensor_triggered( const sensors_state_t& state )
 
 //--------------------------------------------------------------------------------------------------
 
-/*virtual */
+/*virtual */ // provides number of button pin starting from 0
 void event_handler_t::on_double_click( uint button_pin )
 {
     // TODO: implement on double click

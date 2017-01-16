@@ -9,6 +9,7 @@
 
 
 #define POLL_TIMEOUT	50
+#define MAX_LIGHT_COUNT 8
 
 
 //--------------------------------------------------------------------------------------------------
@@ -18,6 +19,7 @@ device_controller_t::device_controller_t( )
     , m_device_lock( )
     , m_observers_list( )
     , m_device_state( )
+    , m_light_times( MAX_LIGHT_COUNT )
     , m_wait_timeout( false, false )
 {
     create_internal_objects( );
@@ -140,6 +142,8 @@ void device_controller_t::do_execute_command( const device_command_t& command )
     {
         if ( m_device_state.lights != state.lights )
         {
+            update_light_times( m_device_state.lights ^ state.lights );
+
             for ( auto& observer : m_observers_list )
             {
                 observer->on_light_changed( state.lights );
@@ -163,6 +167,30 @@ void device_controller_t::do_execute_command( const device_command_t& command )
         }
 
         m_device_state = state;
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void device_controller_t::update_light_times( uint bitset )
+{
+    for ( uint idx = 0; idx < MAX_LIGHT_COUNT; ++idx )
+    {
+        uint bit = 1 << idx;
+        if ( bitset & bit )
+        {
+            time_t current_time = time_t( nullptr );
+            if ( current_time - m_light_times[ idx ] < 2 ) // 1 second
+            {
+                LOG_TRACE( "[device.event] double click of #%u button", idx );
+                for ( auto& observer : m_observers_list )
+                {
+                    observer->on_double_click( idx );
+                }
+            }
+
+            m_light_times[ idx ] = current_time;
+        }
     }
 }
 

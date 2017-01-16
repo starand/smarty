@@ -32,18 +32,16 @@ public: // thread_base_t implementation
 
 private:
     void do_execute_command( const device_command_t& command );
-
-private:
-    typedef std::set<device_observer_t *> device_observer_list_t;
+    void update_light_times( uint bitset );
 
 private:
     device_driver_t *m_device;
     mutex_t m_device_lock;
 
-    device_observer_list_t m_observers_list;
+    std::set< device_observer_t* > m_observers_list;
 
     device_state_t m_device_state;
-
+    std::vector< time_t > m_light_times;
     event_t m_wait_timeout;
 };
 
