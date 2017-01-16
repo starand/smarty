@@ -69,18 +69,17 @@ void mobile_register_t::on_light_changed( const lights_state_t& state )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void mobile_register_t::on_button_pressed( const buttons_state_t& state )
-{
-
-}
+void mobile_register_t::on_button_pressed( const buttons_state_t& state ) { /* stub */ }
 
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void mobile_register_t::on_sensor_triggered( const sensors_state_t& state )
-{
+void mobile_register_t::on_sensor_triggered( const sensors_state_t& state ) { /* stub */ }
 
-}
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
+void mobile_register_t::on_double_click( uint button_pin ) { /* stub */ }
 
 //--------------------------------------------------------------------------------------------------
 

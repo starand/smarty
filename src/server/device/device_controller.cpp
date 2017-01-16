@@ -119,6 +119,12 @@ void device_controller_t::on_sensor_triggered( const sensors_state_t& state )
     m_update_event.set( ); // notify about changes
 }
 
+/*virtual */
+void device_controller_t::on_double_click( uint button_pin )
+{
+    // TODO: implement on double click
+}
+
 //--------------------------------------------------------------------------------------------------
 
 lights_state_t device_controller_t::get_lights_state( )

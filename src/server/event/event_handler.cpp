@@ -117,6 +117,14 @@ void event_handler_t::on_sensor_triggered( const sensors_state_t& state )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
+void event_handler_t::on_double_click( uint button_pin )
+{
+    // TODO: implement on double click
+}
+
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
 std::shared_ptr< smarty::event_t >
 event_handler_t::create_device_event( DeviceEventType type,
                                       uint pin, TriggerState state, uint mode )
