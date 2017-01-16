@@ -102,6 +102,7 @@ static const char *g_aszDeviceEventTypeNames[ (size_t)DeviceEventType::_MAX_ ] =
     "sensor",   // SENSOR
     "button",   // BUTTON
     "light",    // LIGHT
+    "double click", // DOUBLE_CLICK
 };
 
 DeviceEventType device_event_type_by_name( const std::string& name )

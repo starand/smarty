@@ -154,6 +154,7 @@ enum class DeviceEventType
     SENSOR = _MIN_,
     BUTTON,
     LIGHT,
+    DOUBLE_CLICK,
 
     _MAX_,
     _UNKNOWN_ = _MAX_

@@ -104,6 +104,7 @@ enum WhenEventType
     SENSOR_TRIGGERED,
     BUTTON_PRESSED,
     LIGHT_TURNED,
+    DOUBLE_CLICKED,
 
     _UNKNOWN_EVENT_
 };
@@ -138,6 +139,10 @@ WhenEventType get_event_type( const std::string& name )
     else if ( name == "light" )
     {
         return LIGHT_TURNED;
+    }
+    else if ( name == "double" )
+    {
+        return DOUBLE_CLICKED;
     }
 
     return _UNKNOWN_EVENT_;
@@ -615,6 +620,12 @@ bool event_parser_t::parse_condition_text( Json::Value node,
         CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid light name in when node" );
         event = m_event_factory.create_device_event(
                     DeviceEventType::BUTTON, pin, turned_on, event_mode );
+        break;
+    case DOUBLE_CLICKED:
+        pin = parse_light_pin( name );
+        CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid button name in when node" );
+        event = m_event_factory.create_device_event(
+                    DeviceEventType::DOUBLE_CLICK, pin, turned_on, event_mode );
         break;
     case _UNKNOWN_EVENT_:
         LOG_ERROR( "Unknown when condition type: \'%s\'", type.c_str( ) );

@@ -54,12 +54,14 @@ private:
     void check_lights_changes( );
     void check_buttons_changes( );
     void check_sensors_changes( );
+    void check_double_click( );
 
 private:
     driver_intf_t& m_driver;
     smarty_config_t& m_config;
 
     device_state_t m_device_state;
+    uint m_double_click_pin;
     event_t m_update_event;
     device_state_t m_prev_device_state;
 

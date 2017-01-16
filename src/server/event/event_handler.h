@@ -51,11 +51,13 @@ private:
 
     command_processor_t& m_command_handler;
     device_state_t m_device_state;
+    uint m_last_dblclck_pin;
 
     events_t m_light_events;
     events_t m_button_events;
     events_t m_sensor_events;
     events_t m_mode_events;
+    events_t m_double_click_events;
 
     uint m_event_modes_bitset;
 };

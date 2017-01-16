@@ -11,6 +11,9 @@
 #include <utils.h>
 
 
+#define PIN_NOT_SET (uint)-1
+
+
 // device_controller_t implementation
 //--------------------------------------------------------------------------------------------------
 
@@ -19,6 +22,7 @@ device_controller_t::device_controller_t( driver_intf_t& driver, smarty_config_t
     : m_driver( driver )
     , m_config( config )
     , m_device_state( state )
+    , m_double_click_pin( PIN_NOT_SET )
     , m_update_event( true, false )
     , m_prev_device_state( state )
     , m_observers( )
@@ -122,7 +126,8 @@ void device_controller_t::on_sensor_triggered( const sensors_state_t& state )
 /*virtual */
 void device_controller_t::on_double_click( uint button_pin )
 {
-    // TODO: implement on double click
+    m_double_click_pin = button_pin;
+    m_update_event.set( ); // notify about changes
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -174,8 +179,10 @@ void device_controller_t::check_for_changes( )
     check_lights_changes( );
     check_buttons_changes( );
     check_sensors_changes( );
+    check_double_click( );
 
     m_prev_device_state = m_device_state;
+    m_double_click_pin = PIN_NOT_SET;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -241,6 +248,22 @@ void device_controller_t::check_sensors_changes( )
 
         LOG_TRACE( "[device] Sensor state changed to %u (prev %u): .... %s %s", current_state,
                    prev_state, names.c_str( ), ( current_state > prev_state ? "high" : "low" ) );
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void device_controller_t::check_double_click( )
+{
+    if ( m_double_click_pin != PIN_NOT_SET )
+    {
+        for ( auto& observer : m_observers )
+        {
+            observer->on_double_click( m_double_click_pin );
+        }
+
+        string name = m_config.get_light_names( 1 << m_double_click_pin );
+        LOG_TRACE( "[device] Button double click %u: .... %s", m_double_click_pin, name.c_str( ) );
     }
 }
 
