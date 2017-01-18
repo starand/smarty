@@ -1,10 +1,8 @@
 #pragma once
 
-#include <command/command_factory.h>
 #include <command/command_handler.h>
-#include <event/event_factory.h>
-
 #include <common/driver_intf.h>
+#include <common/enums.h>
 
 #include <lock_queue.h>
 #include <threading/threading.h>
@@ -20,6 +18,7 @@ class light_object_t;
 namespace smarty
 {
     class command_t;
+    class event_t;
 }
 
 typedef std::vector< std::shared_ptr< smarty::event_t > > events_t;
@@ -28,10 +27,8 @@ typedef std::vector< std::shared_ptr< smarty::event_t > > events_t;
 
 class event_handler_t
     : public device_observer_t
-    , public smarty::event_factory_t
     , public thread_base_t
     , public smarty::command_handler_t
-    , public smarty::command_factory_t
 {
 public:
     event_handler_t( const config_t& config, driver_intf_t& driver, const device_state_t& state );
@@ -49,7 +46,7 @@ public: // device_observer_t
     virtual void on_sensor_triggered( const sensors_state_t& state );
     virtual void on_double_click( uint button_pin );
 
-public: // event_factory_intf_t
+public:
     virtual std::shared_ptr< smarty::event_t >
     create_device_event( DeviceEventType type, uint pin, TriggerState state, uint mode );
 
@@ -63,7 +60,7 @@ public: // thread_base_t
 public: // smarty::command_handler_t
     void add_command( std::shared_ptr< smarty::command_t > cmd );
 
-public: // smarty::command_factory_t
+public:
     virtual std::shared_ptr< smarty::command_t >
     create_device_command( const device_command_t& cmd, uint timeout );
 

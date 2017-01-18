@@ -7,13 +7,12 @@
 
 
 class config_t;
+class event_handler_t;
 
 namespace smarty
 {
-    class command_factory_t;
     class command_t;
     class event_t;
-    class event_factory_t;
 }
 
 namespace Json
@@ -29,8 +28,7 @@ typedef std::vector< action_t > actions_t;
 class event_parser_t
 {
 public:
-    event_parser_t( smarty::event_factory_t& event_factory,
-                    smarty::command_factory_t& command_factory );
+    event_parser_t( event_handler_t& event_handler );
     ~event_parser_t( );
 
     bool parse( const config_t& config );
@@ -72,8 +70,7 @@ private:
                              device_cmd_t cmd, device_param_t param, uint timeout = 0 );
 
 private:
-    smarty::event_factory_t& m_event_factory;
-    smarty::command_factory_t& m_command_factory;
+    event_handler_t& m_event_handler;
 
     static std::vector< std::string > m_modes;
 

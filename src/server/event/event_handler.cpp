@@ -47,7 +47,7 @@ event_handler_t::event_handler_t( const config_t& config, driver_intf_t& driver,
                                   const device_state_t& state  )
     : m_config( config )
     , m_driver( driver )
-    , m_event_parser( new event_parser_t( *this, *this ) )
+    , m_event_parser( new event_parser_t( *this ) )
     , m_device_state( state )
     , m_last_dblclck_pin( INVALID_PIN )
     , m_light_events( )

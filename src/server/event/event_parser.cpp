@@ -1,8 +1,7 @@
 #include <common/StdAfx.h>
 
 #include <command/command_device.h>
-#include <command/command_factory.h>
-#include <event/event_factory.h>
+#include <event/event_handler.h>
 #include <event/event_parser.h>
 #include <event/device_event.h>
 
@@ -178,10 +177,8 @@ std::vector< std::string > event_parser_t::m_modes;
 
 //--------------------------------------------------------------------------------------------------
 
-event_parser_t::event_parser_t( smarty::event_factory_t& event_factory,
-                                smarty::command_factory_t& command_factory )
-    : m_event_factory( event_factory )
-    , m_command_factory( command_factory )
+event_parser_t::event_parser_t( event_handler_t& event_handler )
+    : m_event_handler( event_handler )
     , m_sensors( )
     , m_lights( )
 {
@@ -601,30 +598,30 @@ bool event_parser_t::parse_condition_text( Json::Value node,
     case MODE_CHANGED:
         pin = get_mode_id( name );
         CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid mode name in when node" );
-        event = m_event_factory.create_mode_event( pin, turned_on == TriggerState::HIGH );
+        event = m_event_handler.create_mode_event( pin, turned_on == TriggerState::HIGH );
         break;
     case SENSOR_TRIGGERED:
         pin = parse_sensor_pin( name );
         CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid sensor name in when node" );
-        event = m_event_factory.create_device_event(
+        event = m_event_handler.create_device_event(
                     DeviceEventType::SENSOR, pin, turned_on, event_mode );
         break;
     case BUTTON_PRESSED:
         pin = parse_light_pin( name );
         CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid button name in when node" );
-        event = m_event_factory.create_device_event(
+        event = m_event_handler.create_device_event(
                     DeviceEventType::BUTTON, pin, turned_on, event_mode );
         break;
     case LIGHT_TURNED:
         pin = parse_light_pin( name );
         CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid light name in when node" );
-        event = m_event_factory.create_device_event(
+        event = m_event_handler.create_device_event(
                     DeviceEventType::BUTTON, pin, turned_on, event_mode );
         break;
     case DOUBLE_CLICKED:
         pin = parse_light_pin( name );
         CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid button name in when node" );
-        event = m_event_factory.create_device_event(
+        event = m_event_handler.create_device_event(
                     DeviceEventType::DOUBLE_CLICK, pin, turned_on, event_mode );
         break;
     case _UNKNOWN_EVENT_:
@@ -659,6 +656,12 @@ bool event_parser_t::parse_device_condition( Json::Value node,
     case DeviceEventType::LIGHT:
         pin = parse_light_pin( node );
         break;
+    case DeviceEventType::DOUBLE_CLICK:
+        ASSERT( false && "Not implemented" );
+        break;
+    case DeviceEventType::_UNKNOWN_:
+        ASSERT( false && "Error occurred" );
+        break;
     }
 
     CHECK_RETURN_FALSE( pin == INVALID_PIN );
@@ -667,7 +670,7 @@ bool event_parser_t::parse_device_condition( Json::Value node,
     CHECK_RETURN_MSG( _state.isNull( ), "State node not set in sensor node" );
 
     TriggerState trigger_state = get_sensor_state( _state );
-    event = m_event_factory.create_device_event( event_type, pin, trigger_state, mode );
+    event = m_event_handler.create_device_event( event_type, pin, trigger_state, mode );
 
     return true;
 }
@@ -688,7 +691,7 @@ bool event_parser_t::parse_mode_condition( Json::Value node,
     CHECK_RETURN_MSG( _changed_to.isNull(), "Mode event \'to\' attribute not set in event node" );
 
     bool enabled = _changed_to.asString() == "on";
-    event = m_event_factory.create_mode_event( mode_id, enabled );
+    event = m_event_handler.create_mode_event( mode_id, enabled );
 
     return true;
 }
@@ -797,7 +800,7 @@ bool event_parser_t::parse_modes( Json::Value node )
 void event_parser_t::add_device_command( actions_t& actions,
                                          device_cmd_t cmd, device_param_t param, uint timeout )
 {
-    actions.push_back( m_command_factory.create_device_command( { cmd, param }, timeout ) );
+    actions.push_back( m_event_handler.create_device_command( { cmd, param }, timeout ) );
 }
 
 //--------------------------------------------------------------------------------------------------

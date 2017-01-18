@@ -242,10 +242,6 @@ void smarty_server_t::clean_clients_queue( )
 
 //--------------------------------------------------------------------------------------------------
 
-
-
-//--------------------------------------------------------------------------------------------------
-
 /*virtual */
 ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
                                   std::shared_ptr< smarty_config_t > config )
