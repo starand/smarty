@@ -12,7 +12,6 @@
 class driver_intf_t;
 class event_t;
 class smarty_config_t;
-class command_processor_t;
 
 
 class device_t : public thread_base_t, public device_observer_t

@@ -10,7 +10,6 @@ class device_t;
 class event_handler_t;
 class mobile_register_t;
 class smarty_server_t;
-class command_processor_t;
 struct mobile_handshake_request_t;
 struct server_command_request_t;
 class packet_intf_t;
@@ -22,7 +21,7 @@ public:
     mobile_handler_t( socket_t& socket, const std::string& endpoint, smarty_config_t& config,
                       device_t& driver, mobile_register_t& mobile_register,
                       smarty_server_t& smarty_server, packet_intf_t *hs_req,
-                      command_processor_t& command_handler, event_handler_t& event_handler );
+                      event_handler_t& event_handler );
     ~mobile_handler_t( );
 
 public:
@@ -49,7 +48,6 @@ private:
     mobile_register_t& m_mobile_register;
     smarty_server_t& m_smarty_server;
 
-    command_processor_t& m_command_handler;
     event_handler_t& m_event_handler;
 };
 

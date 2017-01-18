@@ -4,7 +4,6 @@
 #include <client/client_linker.h>
 #include <client/client_handler_factory.h>
 #include <client/client_queue.h>
-#include <device/light_object.h>
 
 #include <common/server_intf.h>
 
@@ -14,7 +13,6 @@
 
 class client_thread_t;
 class client_handler_intf_t;
-class command_processor_t;
 class driver_intf_t;
 class desktop_register_t;
 class device_t;
@@ -49,9 +47,6 @@ private:
     bool start_client_handlers( );
     void stop_client_handlers( );
 
-    bool start_command_handler( );
-    void stop_command_handler( );
-
     bool start_event_handler( const device_state_t& state );
     void stop_event_handler( );
 
@@ -59,9 +54,6 @@ private:
     void stop_net_server( );
 
     void clean_clients_queue( );
-
-private:
-    bool init_light_objects( );
 
 public: // server_intf_t implementation
     virtual ErrorCode start( std::shared_ptr< driver_intf_t > driver,
@@ -96,15 +88,12 @@ private:
     std::shared_ptr< smarty_config_t > m_config;
     std::shared_ptr< driver_intf_t > m_driver;
 
-    std::unique_ptr< command_processor_t > m_command_handler;
     std::unique_ptr< event_handler_t > m_event_handler;
 
     client_thread_t **m_handlers;
 
     std::unique_ptr< mobile_register_t > m_mobile_register;
     std::unique_ptr< desktop_register_t > m_desktop_register;
-
-    std::vector< light_object_t > m_lights;
 };
 
 #endif // __TCP_SERVER_H_INCLUDED

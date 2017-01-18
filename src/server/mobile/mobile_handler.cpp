@@ -1,7 +1,6 @@
 #include <common/StdAfx.h>
 
 #include <command/command_device.h>
-#include <command/command_processor.h>
 #include <device/device.h>
 #include <device/light_object.h>
 #include <event/event_handler.h>
@@ -29,7 +28,6 @@ mobile_handler_t::mobile_handler_t( socket_t& socket, const std::string& endpoin
                                     smarty_config_t& config, device_t& device,
                                     mobile_register_t& mobile_register,
                                     smarty_server_t& smarty_server, packet_intf_t *hs_req,
-                                    command_processor_t& command_handler,
                                     event_handler_t& event_handler )
     : m_socket( socket )
     , m_end_point( endpoint )
@@ -38,7 +36,6 @@ mobile_handler_t::mobile_handler_t( socket_t& socket, const std::string& endpoin
     , m_device( device )
     , m_mobile_register( mobile_register )
     , m_smarty_server( smarty_server )
-    , m_command_handler( command_handler )
     , m_event_handler( event_handler )
 {
     mobile_handshake_request_t *request = dynamic_cast<mobile_handshake_request_t *>( hs_req );
@@ -253,8 +250,8 @@ void mobile_handler_t::add_command_delay( const std::string& params )
     uint timeout = static_cast< uint >( atoi( options[ 1 ].c_str( ) ) );
     device_param_t param = static_cast< device_param_t >( atoi( options[ 0 ].c_str( ) ) );
 
-    auto command = m_command_handler.create_device_command( { EC_TURNOFF, param }, timeout );
-    m_command_handler.add_command( command );
+    auto command = m_event_handler.create_device_command( { EC_TURNOFF, param }, timeout );
+    m_event_handler.add_command( command );
 }
 
 //--------------------------------------------------------------------------------------------------

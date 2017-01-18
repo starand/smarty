@@ -1,7 +1,6 @@
 #include <common/StdAfx.h>
 
 #include <command/command_device.h>
-#include <command/command_processor.h>
 #include <device/light_object.h>
 #include <event/device_event.h>
 #include <event/double_click_event.h>
@@ -10,6 +9,8 @@
 #include <event/mode_event.h>
 
 #include <common/driver_intf.h>
+//#include <common/errors.h>
+//#include <common/mc_enum.h>
 #include <files/config.h>
 #include <utils/utils.h>
 
@@ -19,13 +20,34 @@
 #define INVALID_PIN (uint)-1
 
 
+namespace
+{
+
 //--------------------------------------------------------------------------------------------------
 
-event_handler_t::event_handler_t( const config_t& config, command_processor_t& command_handler,
-                                  const device_state_t& state )
+uint get_bit_offset( device_param_t param )
+{
+    uint result = 0;
+    while ( param && ( param & 1 ) == 0 )
+    {
+        ++result;
+        param >>= 1;
+    }
+
+    return result;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+}
+
+//--------------------------------------------------------------------------------------------------
+
+event_handler_t::event_handler_t( const config_t& config, driver_intf_t& driver,
+                                  const device_state_t& state  )
     : m_config( config )
-    , m_event_parser( new event_parser_t( *this, command_handler ) )
-    , m_command_handler( command_handler )
+    , m_driver( driver )
+    , m_event_parser( new event_parser_t( *this, *this ) )
     , m_device_state( state )
     , m_last_dblclck_pin( INVALID_PIN )
     , m_light_events( )
@@ -34,6 +56,8 @@ event_handler_t::event_handler_t( const config_t& config, command_processor_t& c
     , m_mode_events( )
     , m_double_click_events( )
     , m_event_modes_bitset( 0 )
+    , m_cmd_queue( )
+    , m_lights( )
 {
 }
 
@@ -51,6 +75,29 @@ bool event_handler_t::init( )
     {
         return false;
     }
+
+    if ( !init_light_objects( ) )
+    {
+        return false;
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+bool event_handler_t::init_light_objects( )
+{
+    auto lights_node = m_config[ "lights" ];
+    if ( lights_node.isNull( ) )
+    {
+        LOG_ERROR( "Lights node not set in config" );
+        return false;
+    }
+
+    uint lights_count = lights_node.size( );
+    ASSERT( lights_count != 0 );
+    m_lights.resize( lights_count );
 
     return true;
 }
@@ -148,25 +195,25 @@ event_handler_t::create_device_event( DeviceEventType type,
     {
     case DeviceEventType::LIGHT:
         event = std::make_shared< device_event_t >(
-                        type, pin, state, mode, m_command_handler, m_device_state );
+                        type, pin, state, mode, *this, m_device_state );
         m_light_events.emplace_back( event );
         LOG_TRACE( "[event.light] on state %u, pin #%u created", state, pin );
         break;
     case DeviceEventType::BUTTON:
         event = std::make_shared< device_event_t >(
-                        type, pin, state, mode, m_command_handler, m_device_state );
+                        type, pin, state, mode, *this, m_device_state );
         m_button_events.emplace_back( event );
         LOG_TRACE( "[event.button] on state %u, pin #%u created", state, pin );
         break;
     case DeviceEventType::SENSOR:
         event = std::make_shared< device_event_t >(
-                        type, pin, state, mode, m_command_handler, m_device_state );
+                        type, pin, state, mode, *this, m_device_state );
         m_sensor_events.emplace_back( event );
         LOG_TRACE( "[event.sensor] on state %u, pin #%u created", state, pin );
         break;
     case DeviceEventType::DOUBLE_CLICK:
         event = std::make_shared< double_click_event_t >(
-                        pin, mode, m_last_dblclck_pin, m_command_handler );
+                        pin, mode, m_last_dblclck_pin, *this );
         m_double_click_events.emplace_back( event );
         LOG_TRACE( "[event.dblclck] for pin #%u created", state, pin );
         break;
@@ -184,8 +231,7 @@ event_handler_t::create_device_event( DeviceEventType type,
 std::shared_ptr< smarty::event_t >
 event_handler_t::create_mode_event( uint mode, bool enabled )
 {
-    auto event = std::make_shared< mode_event_t >( mode, enabled,
-                                                   m_command_handler, m_event_modes_bitset );
+    auto event = std::make_shared< mode_event_t >( mode, enabled, *this, m_event_modes_bitset );
     m_mode_events.emplace_back( event );
 
     LOG_TRACE( "[event.mode] on mode %u, changed to \'%s\'", mode, ( enabled ? "on" : "off" ) );
@@ -194,10 +240,105 @@ event_handler_t::create_mode_event( uint mode, bool enabled )
 
 //--------------------------------------------------------------------------------------------------
 
+/*virtual */
+void event_handler_t::do_run( )
+{
+    while ( true )
+    {
+        sleep( 100 );
+        if ( is_stopping( ) )
+        {
+            break;
+        }
+
+        if ( !m_cmd_queue.empty( ) )
+        {
+            process_command( );
+        }
+
+        check_light_objects( );
+    }
+}
+
+//--------------------------------------------------------------------------------------------------
+
+/*virtual */
+void event_handler_t::do_stop( )
+{
+    class fake_command : public smarty::command_t
+    {
+    public:
+        virtual ErrorCode execute( driver_intf_t& driver ) { return ErrorCode::OK; }
+    };
+
+    std::shared_ptr< smarty::command_t > fake( new fake_command( ) );
+    m_cmd_queue.push( fake );
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void event_handler_t::add_command( std::shared_ptr< smarty::command_t > cmd )
+{
+    m_cmd_queue.push( cmd );
+    LOG_TRACE( "[cmd.%p] Command added to event handler", cmd.get( ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+
+std::shared_ptr< smarty::command_t >
+event_handler_t::create_device_command( const device_command_t& cmd, uint timeout )
+{
+    uint idx = get_bit_offset( cmd.param );
+    auto res = std::make_shared< command_device_t >( cmd, timeout, m_lights[ idx ] );
+    LOG_DEBUG( "[cmd.%p] Device command [%u:%u] with params (timeout %u) created",
+               res.get(), cmd.cmd, cmd.param, timeout );
+
+    return res;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 bool event_handler_t::check_mode( const smarty::event_t& handler ) const
 {
     uint mode = handler.get_mode( );
     return ( m_event_modes_bitset & mode ) != 0 || mode == 0;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void event_handler_t::process_command( )
+{
+    auto command = m_cmd_queue.pop( );
+    ErrorCode code = command->execute( m_driver );
+
+    if ( code != ErrorCode::OK )
+    {
+        LOG_ERROR( "[cmd.%p] Command failed with code %u", command.get( ), code );
+    }
+
+    LOG_TRACE( "[cmd.%p] Command processed", command.get( ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void event_handler_t::check_light_objects( )
+{
+    time_t current = time( nullptr );
+
+    uint count = m_lights.size( );
+    for ( uint idx = 0; idx < count; ++idx )
+    {
+        auto& light = m_lights[ idx ];
+
+        time_t timeout = light.get_turnoff_timeout( );
+        if ( timeout && timeout <= current )
+        {
+            device_command_t cmd{ EC_TURNOFF, static_cast<device_param_t>( 1 << idx ) };
+            add_command( std::make_shared< command_device_t >( cmd, 0, light ) );
+
+            light.clear_turnoff_time( );
+        }
+    }
 }
 
 //--------------------------------------------------------------------------------------------------

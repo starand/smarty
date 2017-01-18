@@ -12,7 +12,6 @@ SRC = \
 	$(SRC_DIR)/client/client_thread.cpp \
 	$(SRC_DIR)/client/client_heartbeat.cpp \
 	$(SRC_DIR)/command/command_device.cpp \
-	$(SRC_DIR)/command/command_processor.cpp \
 	$(SRC_DIR)/desktop/desktop_handler.cpp \
 	$(SRC_DIR)/desktop/desktop_register.cpp \
 	$(SRC_DIR)/device/device.cpp \

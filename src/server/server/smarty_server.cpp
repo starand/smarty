@@ -1,7 +1,6 @@
 #include <common/StdAfx.h>
 
 #include <client/client_thread.h>
-#include <command/command_processor.h>
 #include <desktop/desktop_handler.h>
 #include <desktop/desktop_register.h>
 #include <device/device.h>
@@ -36,13 +35,10 @@ smarty_server_t::smarty_server_t( )
     , m_device( )
     , m_config( )
     , m_driver( )
-    , m_command_handler( )
     , m_event_handler( )
     , m_handlers( nullptr )
     , m_mobile_register( )
     , m_desktop_register( new desktop_register_t( *this ) )
-    , m_lights( )
-
 {
 #ifdef LINUX
     ignore_sigpipe( );
@@ -66,7 +62,6 @@ bool smarty_server_t::start_device( const device_state_t& state )
 {
     ASSERT( m_config.get( ) != nullptr );
     ASSERT( m_driver.get( ) != nullptr );
-    ASSERT( m_command_handler.get( ) != nullptr );
 
     m_device.reset( new device_t( *m_driver, *m_config, state ) );
     if ( !m_device->start( ) )
@@ -178,41 +173,20 @@ void smarty_server_t::stop_client_handlers( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_server_t::start_command_handler( )
-{
-    ASSERT( m_config.get( ) != nullptr );
-    ASSERT( m_driver.get( ) != nullptr );
-
-    m_command_handler.reset( new command_processor_t( *m_driver, *m_config, m_lights ) );
-    if ( !m_command_handler->start( ) )
-    {
-        ASSERT_FAIL( "Unable to start command handler" );
-    }
-
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void smarty_server_t::stop_command_handler( )
-{
-    ASSERT( m_command_handler.get( ) != nullptr );
-
-    m_command_handler->stop( );
-    m_command_handler->wait( );
-}
-
-//--------------------------------------------------------------------------------------------------
-
 bool smarty_server_t::start_event_handler( const device_state_t& state )
 {
     ASSERT( m_config.get( ) != nullptr );
     ASSERT( m_driver.get( ) != nullptr );
 
-    event_handler_t* handler = new event_handler_t( *m_config, *m_command_handler, state );
+    event_handler_t* handler = new event_handler_t( *m_config, *m_driver, state );
 
     m_event_handler.reset( handler );
     if ( !m_event_handler->init( ) )
+    {
+        ASSERT_FAIL( "Unable to start event handler" );
+    }
+
+    if ( !m_event_handler->start( ) )
     {
         ASSERT_FAIL( "Unable to start event handler" );
     }
@@ -229,6 +203,9 @@ void smarty_server_t::stop_event_handler( )
     ASSERT( m_driver.get( ) != nullptr );
 
     m_device->remove_observer( *m_event_handler );
+
+    m_event_handler->stop( );
+    m_event_handler->wait( );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -265,21 +242,7 @@ void smarty_server_t::clean_clients_queue( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_server_t::init_light_objects( )
-{
-    auto lights_node = ( *m_config )[ "lights" ];
-    if ( lights_node.isNull( ) )
-    {
-        LOG_ERROR( "Lights node not set in config" );
-        return false;
-    }
 
-    uint lights_count = lights_node.size( );
-    ASSERT( lights_count != 0 );
-    m_lights.resize( lights_count );
-
-    return true;
-}
 
 //--------------------------------------------------------------------------------------------------
 
@@ -301,12 +264,7 @@ ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
         return ErrorCode::OPERATION_FAILED;
     }
 
-    if ( !init_light_objects( ) )
-    {
-        return ErrorCode::OPERATION_FAILED;;
-    }
-
-    return start_command_handler( ) && start_device( state ) &&
+    return start_device( state ) &&
            start_event_handler( state ) && start_mobile_register( state ) &&
            start_desktop_register( ) && start_client_handlers( ) && start_net_server( )
            ? ErrorCode::OK : ErrorCode::OPERATION_FAILED;
@@ -323,7 +281,6 @@ ErrorCode smarty_server_t::stop( )
     stop_mobile_register( );
     stop_device( );
     stop_event_handler( );
-    stop_command_handler( );
 
     return ErrorCode::OK;
 }
@@ -365,7 +322,7 @@ smarty_server_t::create_mobile_handler( socket_t& socket, const char *endpoint,
     ASSERT( m_mobile_register.get( ) != nullptr );
 
     return new mobile_handler_t( socket, endpoint, *m_config, *m_device, *m_mobile_register, *this,
-                                 hs_req, *m_command_handler, *m_event_handler );
+                                 hs_req, *m_event_handler );
 }
 
 //--------------------------------------------------------------------------------------------------
