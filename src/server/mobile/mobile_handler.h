@@ -6,7 +6,7 @@
 
 class socket_t;
 class smarty_config_t;
-class device_controller_t;
+class device_t;
 class event_handler_t;
 class mobile_register_t;
 class smarty_server_t;
@@ -20,7 +20,7 @@ class mobile_handler_t : public smarty::client_handler_t
 {
 public:
     mobile_handler_t( socket_t& socket, const std::string& endpoint, smarty_config_t& config,
-                      device_controller_t& driver, mobile_register_t& mobile_register,
+                      device_t& driver, mobile_register_t& mobile_register,
                       smarty_server_t& smarty_server, packet_intf_t *hs_req,
                       command_processor_t& command_handler, event_handler_t& event_handler );
     ~mobile_handler_t( );
@@ -45,7 +45,7 @@ private:
 
     smarty_config_t& m_config;
 
-    device_controller_t& m_device;
+    device_t& m_device;
     mobile_register_t& m_mobile_register;
     smarty_server_t& m_smarty_server;
 

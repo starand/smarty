@@ -2,7 +2,7 @@
 
 #include <command/command_device.h>
 #include <command/command_processor.h>
-#include <device/device_controller.h>
+#include <device/device.h>
 #include <device/light_object.h>
 #include <event/event_handler.h>
 #include <event/event_parser.h>
@@ -26,7 +26,7 @@ extern const char g_szUnableToSendResponse[];
 //--------------------------------------------------------------------------------------------------
 
 mobile_handler_t::mobile_handler_t( socket_t& socket, const std::string& endpoint,
-                                    smarty_config_t& config, device_controller_t& device,
+                                    smarty_config_t& config, device_t& device,
                                     mobile_register_t& mobile_register,
                                     smarty_server_t& smarty_server, packet_intf_t *hs_req,
                                     command_processor_t& command_handler,

@@ -1,7 +1,7 @@
 #include <common/StdAfx.h>
 
 #include <command/command_device.h>
-#include <device/device_controller.h>
+#include <device/device.h>
 #include <device/light_object.h>
 #include <event/event_parser.h>
 

@@ -17,7 +17,7 @@ class client_handler_intf_t;
 class command_processor_t;
 class driver_intf_t;
 class desktop_register_t;
-class device_controller_t;
+class device_t;
 struct device_state_t;
 class event_handler_t;
 class mobile_register_t;
@@ -37,8 +37,8 @@ public:
     ~smarty_server_t( );
 
 private:
-    bool start_device_controller( const device_state_t& state );
-    void stop_device_controller( );
+    bool start_device( const device_state_t& state );
+    void stop_device( );
 
     bool start_mobile_register( const device_state_t& state );
     void stop_mobile_register( );
@@ -91,7 +91,7 @@ public:
 private:
     clients_queue_t m_clients_queue;
     std::unique_ptr< net_server_t > m_net_server;
-    std::unique_ptr< device_controller_t > m_device_controller;
+    std::unique_ptr< device_t > m_device;
 
     std::shared_ptr< smarty_config_t > m_config;
     std::shared_ptr< driver_intf_t > m_driver;

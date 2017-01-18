@@ -15,7 +15,7 @@ SRC = \
 	$(SRC_DIR)/command/command_processor.cpp \
 	$(SRC_DIR)/desktop/desktop_handler.cpp \
 	$(SRC_DIR)/desktop/desktop_register.cpp \
-	$(SRC_DIR)/device/device_controller.cpp \
+	$(SRC_DIR)/device/device.cpp \
 	$(SRC_DIR)/device/light_object.cpp \
 	$(SRC_DIR)/event/device_event.cpp \
 	$(SRC_DIR)/event/double_click_event.cpp \

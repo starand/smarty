@@ -1,5 +1,4 @@
-#ifndef __DEVICE_CONTROLLER_H_INCLUDED
-#define __DEVICE_CONTROLLER_H_INCLUDED
+#pragma once
 
 #include <common/driver_intf.h>
 
@@ -44,5 +43,3 @@ private:
     std::vector< time_t > m_light_times;
     event_t m_wait_timeout;
 };
-
-#endif // __DEVICE_CONTROLLER_H_INCLUDED

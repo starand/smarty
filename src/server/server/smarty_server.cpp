@@ -4,7 +4,7 @@
 #include <command/command_processor.h>
 #include <desktop/desktop_handler.h>
 #include <desktop/desktop_register.h>
-#include <device/device_controller.h>
+#include <device/device.h>
 #include <event/event_handler.h>
 #include <mobile/mobile_handler.h>
 #include <mobile/mobile_register.h>
@@ -33,7 +33,7 @@
 smarty_server_t::smarty_server_t( )
     : m_clients_queue( )
     , m_net_server( new net_server_t( m_clients_queue ) )
-    , m_device_controller( )
+    , m_device( )
     , m_config( )
     , m_driver( )
     , m_command_handler( )
@@ -62,14 +62,14 @@ smarty_server_t::~smarty_server_t( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_server_t::start_device_controller( const device_state_t& state )
+bool smarty_server_t::start_device( const device_state_t& state )
 {
     ASSERT( m_config.get( ) != nullptr );
     ASSERT( m_driver.get( ) != nullptr );
     ASSERT( m_command_handler.get( ) != nullptr );
 
-    m_device_controller.reset( new device_controller_t( *m_driver, *m_config, state ) );
-    if ( !m_device_controller->start( ) )
+    m_device.reset( new device_t( *m_driver, *m_config, state ) );
+    if ( !m_device->start( ) )
     {
         ASSERT_FAIL( "Unable to start device controller" );
     }
@@ -79,12 +79,12 @@ bool smarty_server_t::start_device_controller( const device_state_t& state )
 
 //--------------------------------------------------------------------------------------------------
 
-void smarty_server_t::stop_device_controller( )
+void smarty_server_t::stop_device( )
 {
-    ASSERT( m_device_controller.get( ) != nullptr );
+    ASSERT( m_device.get( ) != nullptr );
 
-    m_device_controller->stop( );
-    m_device_controller->wait( );
+    m_device->stop( );
+    m_device->wait( );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ bool smarty_server_t::start_mobile_register( const device_state_t& state )
         ASSERT_FAIL( "Unable to start mobile register" );
     }
 
-    m_device_controller->add_observer( *reg );
+    m_device->add_observer( *reg );
     return true;
 }
 
@@ -114,7 +114,7 @@ void smarty_server_t::stop_mobile_register( )
     ASSERT( m_mobile_register.get( ) != nullptr );
     ASSERT( m_driver.get( ) != nullptr );
 
-    m_device_controller->remove_observer( *m_mobile_register );
+    m_device->remove_observer( *m_mobile_register );
     m_mobile_register->stop( );
     m_mobile_register->wait( );
 }
@@ -217,7 +217,7 @@ bool smarty_server_t::start_event_handler( const device_state_t& state )
         ASSERT_FAIL( "Unable to start event handler" );
     }
 
-    m_device_controller->add_observer( *handler );
+    m_device->add_observer( *handler );
     return true;
 }
 
@@ -228,7 +228,7 @@ void smarty_server_t::stop_event_handler( )
     ASSERT( m_event_handler.get( ) != nullptr );
     ASSERT( m_driver.get( ) != nullptr );
 
-    m_device_controller->remove_observer( *m_event_handler );
+    m_device->remove_observer( *m_event_handler );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -306,7 +306,7 @@ ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
         return ErrorCode::OPERATION_FAILED;;
     }
 
-    return start_command_handler( ) && start_device_controller( state ) &&
+    return start_command_handler( ) && start_device( state ) &&
            start_event_handler( state ) && start_mobile_register( state ) &&
            start_desktop_register( ) && start_client_handlers( ) && start_net_server( )
            ? ErrorCode::OK : ErrorCode::OPERATION_FAILED;
@@ -321,7 +321,7 @@ ErrorCode smarty_server_t::stop( )
     stop_client_handlers( );
     stop_desktop_register( );
     stop_mobile_register( );
-    stop_device_controller( );
+    stop_device( );
     stop_event_handler( );
     stop_command_handler( );
 
@@ -364,7 +364,7 @@ smarty_server_t::create_mobile_handler( socket_t& socket, const char *endpoint,
     ASSERT( m_config.get( ) != nullptr );
     ASSERT( m_mobile_register.get( ) != nullptr );
 
-    return new mobile_handler_t( socket, endpoint, *m_config, *m_device_controller,
+    return new mobile_handler_t( socket, endpoint, *m_config, *m_device,
                                  *m_mobile_register, *this, hs_req, *m_command_handler,
                                  *m_event_handler );
 }

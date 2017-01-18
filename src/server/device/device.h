@@ -1,5 +1,4 @@
-#ifndef __STATE_CHECKER_H_INCLUDED
-#define __STATE_CHECKER_H_INCLUDED
+#pragma once
 
 #include <common/driver_intf.h>
 #include <common/errors.h>
@@ -16,12 +15,12 @@ class smarty_config_t;
 class command_processor_t;
 
 
-class device_controller_t : public thread_base_t, public device_observer_t
+class device_t : public thread_base_t, public device_observer_t
 {
 public:
-    device_controller_t( driver_intf_t& driver, smarty_config_t& config,
+    device_t( driver_intf_t& driver, smarty_config_t& config,
                          const device_state_t& state );
-    ~device_controller_t( );
+    ~device_t( );
 
 private:
     void create_internal_objects( );
@@ -67,5 +66,3 @@ private:
 
     std::set< device_observer_t* > m_observers;
 };
-
-#endif // __STATE_CHECKER_H_INCLUDED

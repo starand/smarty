@@ -1,7 +1,7 @@
 #include <common/StdAfx.h>
 
 #include <command/command_device.h>
-#include <device/device_controller.h>
+#include <device/device.h>
 
 #include <common/smarty_config.h>
 #include <common/config_options.h>
@@ -14,10 +14,10 @@
 #define PIN_NOT_SET (uint)-1
 
 
-// device_controller_t implementation
+// device_t implementation
 //--------------------------------------------------------------------------------------------------
 
-device_controller_t::device_controller_t( driver_intf_t& driver, smarty_config_t& config,
+device_t::device_t( driver_intf_t& driver, smarty_config_t& config,
                                           const device_state_t& state )
     : m_driver( driver )
     , m_config( config )
@@ -33,26 +33,26 @@ device_controller_t::device_controller_t( driver_intf_t& driver, smarty_config_t
 
 //--------------------------------------------------------------------------------------------------
 
-device_controller_t::~device_controller_t( )
+device_t::~device_t( )
 {
     destroy_internal_objects( );
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::create_internal_objects( )
+void device_t::create_internal_objects( )
 {
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::destroy_internal_objects( )
+void device_t::destroy_internal_objects( )
 {
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::initialize( )
+void device_t::initialize( )
 {
     auto off_on_start_node = m_config[ DEVICE_SECTION ][ DEVICE_OFF_ON_START ];
     ushort off_on_start = off_on_start_node.isUInt( ) ? off_on_start_node.asUInt( ) : 0;
@@ -67,7 +67,7 @@ void device_controller_t::initialize( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void device_controller_t::do_run( )
+void device_t::do_run( )
 {
     m_driver.add_observer( *this );
     initialize( );
@@ -91,7 +91,7 @@ void device_controller_t::do_run( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void device_controller_t::do_stop( )
+void device_t::do_stop( )
 {
     m_update_event.set( ); // to stop clients status updater
 }
@@ -99,7 +99,7 @@ void device_controller_t::do_stop( )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void device_controller_t::on_light_changed( const lights_state_t& state )
+void device_t::on_light_changed( const lights_state_t& state )
 {
     m_device_state.lights = state;
     m_update_event.set( ); // notify about changes
@@ -108,7 +108,7 @@ void device_controller_t::on_light_changed( const lights_state_t& state )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void device_controller_t::on_button_pressed( const buttons_state_t& state )
+void device_t::on_button_pressed( const buttons_state_t& state )
 {
     m_device_state.buttons = state;
     m_update_event.set( ); // notify about changes
@@ -117,14 +117,14 @@ void device_controller_t::on_button_pressed( const buttons_state_t& state )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void device_controller_t::on_sensor_triggered( const sensors_state_t& state )
+void device_t::on_sensor_triggered( const sensors_state_t& state )
 {
     m_device_state.sensors = state;
     m_update_event.set( ); // notify about changes
 }
 
 /*virtual */
-void device_controller_t::on_double_click( uint button_pin )
+void device_t::on_double_click( uint button_pin )
 {
     m_double_click_pin = button_pin;
     m_update_event.set( ); // notify about changes
@@ -132,49 +132,49 @@ void device_controller_t::on_double_click( uint button_pin )
 
 //--------------------------------------------------------------------------------------------------
 
-lights_state_t device_controller_t::get_lights_state( )
+lights_state_t device_t::get_lights_state( )
 {
     return m_device_state.lights;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::wait_state_update( ) const
+void device_t::wait_state_update( ) const
 {
     m_update_event.wait( );
 }
 
 //--------------------------------------------------------------------------------------------------
 
-ErrorCode device_controller_t::execute_command( device_cmd_t command, device_param_t param )
+ErrorCode device_t::execute_command( device_cmd_t command, device_param_t param )
 {
     return m_driver.execute_command( { command, param } );
 }
 
 //--------------------------------------------------------------------------------------------------
 
-ErrorCode device_controller_t::execute_command( const device_command_t& cmd )
+ErrorCode device_t::execute_command( const device_command_t& cmd )
 {
     return m_driver.execute_command( cmd );
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::add_observer( device_observer_t& observer )
+void device_t::add_observer( device_observer_t& observer )
 {
     m_observers.insert( &observer );
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::remove_observer( device_observer_t& observer )
+void device_t::remove_observer( device_observer_t& observer )
 {
     m_observers.erase( &observer );
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::check_for_changes( )
+void device_t::check_for_changes( )
 {
     check_lights_changes( );
     check_buttons_changes( );
@@ -187,7 +187,7 @@ void device_controller_t::check_for_changes( )
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::check_buttons_changes( )
+void device_t::check_buttons_changes( )
 {
     buttons_state_t& current_state = m_device_state.buttons;
     buttons_state_t& prev_state = m_prev_device_state.buttons;
@@ -209,7 +209,7 @@ void device_controller_t::check_buttons_changes( )
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::check_lights_changes( )
+void device_t::check_lights_changes( )
 {
     lights_state_t& current_state = m_device_state.lights;
     lights_state_t& prev_state = m_prev_device_state.lights;
@@ -231,7 +231,7 @@ void device_controller_t::check_lights_changes( )
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::check_sensors_changes( )
+void device_t::check_sensors_changes( )
 {
     sensors_state_t& current_state = m_device_state.sensors;
     sensors_state_t& prev_state = m_prev_device_state.sensors;
@@ -253,7 +253,7 @@ void device_controller_t::check_sensors_changes( )
 
 //--------------------------------------------------------------------------------------------------
 
-void device_controller_t::check_double_click( )
+void device_t::check_double_click( )
 {
     if ( m_double_click_pin != PIN_NOT_SET )
     {
