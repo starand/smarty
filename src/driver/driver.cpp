@@ -1,5 +1,5 @@
 #include <common/StdAfx.h>
-#include "device_driver.h"
+#include "driver.h"
 
 #include <common/enums.h>
 
@@ -49,24 +49,10 @@ lights_state_t g_previous_state = 0;
 
 //--------------------------------------------------------------------------------------------------
 
-device_driver_t::device_driver_t( )
+driver_t::driver_t( )
     : m_spi( NULL )
     , m_reset_gpio( NULL )
     , m_reset_count( 0 )
-{
-    create_internal_objects( );
-}
-
-//--------------------------------------------------------------------------------------------------
-
-device_driver_t::~device_driver_t( )
-{
-    destroy_internal_objects( );
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void device_driver_t::create_internal_objects( )
 {
     ASSERT( m_spi == NULL ); ASSERT( m_reset_gpio == NULL );
 
@@ -76,7 +62,7 @@ void device_driver_t::create_internal_objects( )
 
 //--------------------------------------------------------------------------------------------------
 
-void device_driver_t::destroy_internal_objects( )
+driver_t::~driver_t( )
 {
     ASSERT( m_spi != NULL ); ASSERT( m_reset_gpio != NULL );
 
@@ -86,7 +72,7 @@ void device_driver_t::destroy_internal_objects( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool device_driver_t::execute_command( const device_command_t& command, device_state_t& state )
+bool driver_t::execute_command( const device_command_t& command, device_state_t& state )
 {
     ASSERT( m_spi != NULL );
 
@@ -114,14 +100,14 @@ bool device_driver_t::execute_command( const device_command_t& command, device_s
 
 //--------------------------------------------------------------------------------------------------
 
-bool device_driver_t::check_correctness( ) const
+bool driver_t::check_correctness( ) const
 {
     return g_szResponseBuffer[ 0 ] == 0xFF && g_szResponseBuffer[ 5 ] == 0x00;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_driver_t::do_reset( )
+void driver_t::do_reset( )
 {
     LOG_ERROR( "Incorrect response. Reset #%u", ++m_reset_count );
     dump_packet( g_szResponseBuffer );
@@ -138,7 +124,7 @@ void device_driver_t::do_reset( )
 
 //--------------------------------------------------------------------------------------------------
 
-void device_driver_t::update_state( device_state_t& state ) const
+void driver_t::update_state( device_state_t& state ) const
 {
     state.lights = g_szResponseBuffer[ LIGHTS_BYTE ];
     state.buttons = g_szResponseBuffer[ BUTTONS_BYTE ];
@@ -149,7 +135,7 @@ void device_driver_t::update_state( device_state_t& state ) const
 
 //--------------------------------------------------------------------------------------------------
 
-void device_driver_t::dump_packet( char packet[] ) const
+void driver_t::dump_packet( char packet[] ) const
 {
     static size_t packet_sent = 0;
 

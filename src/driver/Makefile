@@ -8,7 +8,7 @@ BIN_DIR = ../../bin
 
 SRC = $(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/device_controller.cpp \
-	$(SRC_DIR)/device_driver.cpp \
+	$(SRC_DIR)/driver.cpp \
 	$(RASPI_DIR)/gpio.cpp \
 	$(RASPI_DIR)/c_gpio.cpp \
 	$(RASPI_DIR)/bcm2835.cpp \

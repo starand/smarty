@@ -364,9 +364,8 @@ smarty_server_t::create_mobile_handler( socket_t& socket, const char *endpoint,
     ASSERT( m_config.get( ) != nullptr );
     ASSERT( m_mobile_register.get( ) != nullptr );
 
-    return new mobile_handler_t( socket, endpoint, *m_config, *m_device,
-                                 *m_mobile_register, *this, hs_req, *m_command_handler,
-                                 *m_event_handler );
+    return new mobile_handler_t( socket, endpoint, *m_config, *m_device, *m_mobile_register, *this,
+                                 hs_req, *m_command_handler, *m_event_handler );
 }
 
 //--------------------------------------------------------------------------------------------------

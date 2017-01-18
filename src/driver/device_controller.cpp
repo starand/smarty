@@ -1,7 +1,7 @@
 #include <common/StdAfx.h>
 
 #include "device_controller.h"
-#include "device_driver.h"
+#include "driver.h"
 
 #include <common/enums.h>
 
@@ -22,28 +22,14 @@ device_controller_t::device_controller_t( )
     , m_light_times( MAX_LIGHT_COUNT )
     , m_wait_timeout( false, false )
 {
-    create_internal_objects( );
+    ASSERT( m_device == NULL );
+
+    m_device = new driver_t( );
 }
 
 //--------------------------------------------------------------------------------------------------
 
 device_controller_t::~device_controller_t( )
-{
-    destroy_internal_objects( );
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void device_controller_t::create_internal_objects( )
-{
-    ASSERT( m_device == NULL );
-
-    m_device = new device_driver_t( );
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void device_controller_t::destroy_internal_objects( )
 {
     ASSERT( m_device != NULL );
 

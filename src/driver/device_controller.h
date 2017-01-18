@@ -6,17 +6,13 @@
 #include <set>
 
 
-class device_driver_t;
+class driver_t;
 
 class device_controller_t : public driver_intf_t, public thread_base_t
 {
 public:
     device_controller_t( );
     ~device_controller_t( );
-
-private:
-    void create_internal_objects( );
-    void destroy_internal_objects( );
 
 public: // driver_intf_t implementation
     virtual ErrorCode execute_command( const device_command_t& command );
@@ -34,7 +30,7 @@ private:
     void update_light_times( uint bitset );
 
 private:
-    device_driver_t *m_device;
+    driver_t *m_device;
     mutex_t m_device_lock;
 
     std::set< device_observer_t* > m_observers_list;
