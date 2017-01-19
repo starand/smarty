@@ -227,13 +227,13 @@ bool event_parser_t::parse( const config_t& config )
 
 bool event_parser_t::parse_event( Json::Value node )
 {
-    std::shared_ptr< smarty::event_t > event;
+    event_ptr_t event;
     if ( !parse_condition( node, event ) )
     {
         return false;
     }
 
-    std::vector< std::shared_ptr< smarty::command_t > > actions;
+    std::vector< command_ptr_t > actions;
     if ( !parse_actions( node, actions ) )
     {
         return false;
@@ -497,7 +497,7 @@ bool event_parser_t::parse_action_text( Json::Value node, actions_t& actions )
     case CHANGE_MODE:
         pin = get_mode_id( name );
         CHECK_RETURN_MSG( pin == INVALID_PIN, "Invalid mode name in then action" );
-        ASSERT( false && "Change Mode action Not implemented yet ");
+        add_mode_command( actions, turned_on, pin, timeout );
         break;
     case _UNKNOWN_ACTION_:
         LOG_ERROR( "Unknown then action type: \'%s\'", type.c_str( ) );
@@ -524,7 +524,7 @@ bool event_parser_t::parse_actions_array_text( Json::Value _actions, actions_t& 
 
 //--------------------------------------------------------------------------------------------------
 
-bool event_parser_t::parse_condition( Json::Value node, std::shared_ptr< smarty::event_t >& event )
+bool event_parser_t::parse_condition( Json::Value node, event_ptr_t& event )
 {
     auto _condition = node[ "condition" ];
     if ( !_condition.isNull( ) )
@@ -544,8 +544,7 @@ bool event_parser_t::parse_condition( Json::Value node, std::shared_ptr< smarty:
 
 //--------------------------------------------------------------------------------------------------
 
-bool event_parser_t::parse_condition_json( Json::Value node,
-                                           std::shared_ptr< smarty::event_t >& event )
+bool event_parser_t::parse_condition_json( Json::Value node, event_ptr_t& event )
 {
     uint event_mode;
     if ( !parse_mode( node, event_mode ) )
@@ -571,8 +570,7 @@ bool event_parser_t::parse_condition_json( Json::Value node,
 
 //--------------------------------------------------------------------------------------------------
 
-bool event_parser_t::parse_condition_text( Json::Value node,
-                                           std::shared_ptr< smarty::event_t >& event )
+bool event_parser_t::parse_condition_text( Json::Value node, event_ptr_t& event )
 {
     CHECK_RETURN_MSG( !node.isString( ), "when node is not of string type" );
 
@@ -634,8 +632,7 @@ bool event_parser_t::parse_condition_text( Json::Value node,
 
 //--------------------------------------------------------------------------------------------------
 
-bool event_parser_t::parse_device_condition( Json::Value node,
-                                             std::shared_ptr< smarty::event_t >& event, uint mode )
+bool event_parser_t::parse_device_condition( Json::Value node, event_ptr_t& event, uint mode )
 {
     auto _type = node[ "type" ];
     CHECK_RETURN_MSG( _type.isNull( ), "Device/type node not set in event node" );
@@ -654,10 +651,8 @@ bool event_parser_t::parse_device_condition( Json::Value node,
         break;
     case DeviceEventType::BUTTON:
     case DeviceEventType::LIGHT:
-        pin = parse_light_pin( node );
-        break;
     case DeviceEventType::DOUBLE_CLICK:
-        ASSERT( false && "Not implemented" );
+        pin = parse_light_pin( node );
         break;
     case DeviceEventType::_UNKNOWN_:
         ASSERT( false && "Error occurred" );
@@ -677,8 +672,7 @@ bool event_parser_t::parse_device_condition( Json::Value node,
 
 //--------------------------------------------------------------------------------------------------
 
-bool event_parser_t::parse_mode_condition( Json::Value node,
-                                           std::shared_ptr< smarty::event_t >& event )
+bool event_parser_t::parse_mode_condition( Json::Value node, event_ptr_t& event )
 {
     auto _name = node[ "name" ];
     CHECK_RETURN_MSG( _name.isNull( ), "Mode name not set in event node" );
@@ -801,6 +795,13 @@ void event_parser_t::add_device_command( actions_t& actions,
                                          device_cmd_t cmd, device_param_t param, uint timeout )
 {
     actions.push_back( m_event_handler.create_device_command( { cmd, param }, timeout ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void event_parser_t::add_mode_command( actions_t& actions, bool turn_on, uint pin, uint timeout  )
+{
+    actions.push_back( m_event_handler.create_mode_command( pin, turn_on, timeout ) );
 }
 
 //--------------------------------------------------------------------------------------------------

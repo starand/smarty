@@ -1,5 +1,6 @@
 #pragma once
 
+#include <command/command_handler.h>
 #include <common/enums.h>
 
 #include <memory>
@@ -21,7 +22,7 @@ namespace Json
 }
 
 
-typedef std::shared_ptr< smarty::command_t > action_t;
+typedef command_ptr_t action_t;
 typedef std::vector< action_t > actions_t;
 
 
@@ -68,6 +69,7 @@ private:
 
     void add_device_command( actions_t& actions,
                              device_cmd_t cmd, device_param_t param, uint timeout = 0 );
+    void add_mode_command( actions_t& actions, bool turned_on, uint pin, uint timeout );
 
 private:
     event_handler_t& m_event_handler;

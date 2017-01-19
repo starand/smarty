@@ -1,7 +1,5 @@
 #include <common/StdAfx.h>
 
-#include <command/command_handler.h>
-#include <device/light_object.h>
 #include <event/device_event.h>
 
 
@@ -42,6 +40,12 @@ void device_event_t::on_event( )
         fired = ( m_device_state.lights ^ m_prev_state.lights ) & ( 1 << m_pin );
         onOff = fired & m_device_state.lights;
         break;
+    case DeviceEventType::DOUBLE_CLICK:
+        ASSERT( false && "Could not be implemented" );
+        break;
+    case DeviceEventType::_UNKNOWN_:
+        ASSERT( false && "error" );
+        break;
     }
 
     m_prev_state = m_device_state;
@@ -74,7 +78,7 @@ uint device_event_t::get_mode( ) const
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void device_event_t::set_actions( std::vector< std::shared_ptr< smarty::command_t > >& acts )
+void device_event_t::set_actions( std::vector< command_ptr_t >& acts )
 {
     m_actions.swap( acts );
 }

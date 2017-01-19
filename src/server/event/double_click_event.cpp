@@ -1,6 +1,5 @@
 #include <common/StdAfx.h>
 
-#include <command/command_handler.h>
 #include <event/double_click_event.h>
 
 
@@ -48,7 +47,7 @@ uint double_click_event_t::get_mode( ) const
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void double_click_event_t::set_actions( std::vector< std::shared_ptr< smarty::command_t > >& acts )
+void double_click_event_t::set_actions( std::vector< command_ptr_t >& acts )
 {
     m_actions.swap( acts );
 }

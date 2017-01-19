@@ -1,5 +1,6 @@
 #pragma once
 
+#include <command/command_handler.h>
 #include <common/driver_intf.h>
 #include <common/enums.h>
 #include <common/types.h>
@@ -29,7 +30,7 @@ public:
 public: // event_intf_t
     virtual void on_event( );
     virtual uint get_mode( ) const;
-    virtual void set_actions( std::vector< std::shared_ptr< smarty::command_t > >& actions );
+    virtual void set_actions( std::vector< command_ptr_t >& actions );
 
 protected:
     uint m_mode_id;
@@ -38,7 +39,7 @@ protected:
     const uint& m_modes_bitset;
     uint m_prev_bitset;
 
-    std::vector< std::shared_ptr< smarty::command_t > > m_actions;
+    std::vector< command_ptr_t > m_actions;
     smarty::command_handler_t& m_command_handler;
 };
 

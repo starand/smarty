@@ -71,12 +71,12 @@ event_handler_t::~event_handler_t( )
 
 bool event_handler_t::init( )
 {
-    if ( !m_event_parser->parse( m_config ) )
+    if ( !init_light_objects( ) )
     {
         return false;
     }
 
-    if ( !init_light_objects( ) )
+    if ( !m_event_parser->parse( m_config ) )
     {
         return false;
     }
@@ -98,6 +98,7 @@ bool event_handler_t::init_light_objects( )
     uint lights_count = lights_node.size( );
     ASSERT( lights_count != 0 );
     m_lights.resize( lights_count );
+    LOG_TRACE( "[lights] Created %u light objects", lights_count );
 
     return true;
 }
@@ -185,11 +186,11 @@ void event_handler_t::on_double_click( uint button_pin )
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-std::shared_ptr< smarty::event_t >
+event_ptr_t
 event_handler_t::create_device_event( DeviceEventType type,
                                       uint pin, TriggerState state, uint mode )
 {
-    std::shared_ptr< smarty::event_t > event;
+    event_ptr_t event;
 
     switch ( type )
     {
@@ -228,7 +229,7 @@ event_handler_t::create_device_event( DeviceEventType type,
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-std::shared_ptr< smarty::event_t >
+event_ptr_t
 event_handler_t::create_mode_event( uint mode, bool enabled )
 {
     auto event = std::make_shared< mode_event_t >( mode, enabled, *this, m_event_modes_bitset );
@@ -271,13 +272,13 @@ void event_handler_t::do_stop( )
         virtual ErrorCode execute( driver_intf_t& driver ) { return ErrorCode::OK; }
     };
 
-    std::shared_ptr< smarty::command_t > fake( new fake_command( ) );
+    command_ptr_t fake( new fake_command( ) );
     m_cmd_queue.push( fake );
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void event_handler_t::add_command( std::shared_ptr< smarty::command_t > cmd )
+void event_handler_t::add_command( command_ptr_t cmd )
 {
     m_cmd_queue.push( cmd );
     LOG_TRACE( "[cmd.%p] Command added to event handler", cmd.get( ) );
@@ -285,14 +286,24 @@ void event_handler_t::add_command( std::shared_ptr< smarty::command_t > cmd )
 
 //--------------------------------------------------------------------------------------------------
 
-std::shared_ptr< smarty::command_t >
-event_handler_t::create_device_command( const device_command_t& cmd, uint timeout )
+command_ptr_t event_handler_t::create_device_command( const device_command_t& cmd, uint timeout )
 {
     uint idx = get_bit_offset( cmd.param );
+    ASSERT( idx < m_lights.size( ) && "lights index should be less than m_lights size" );
     auto res = std::make_shared< command_device_t >( cmd, timeout, m_lights[ idx ] );
     LOG_DEBUG( "[cmd.%p] Device command [%u:%u] with params (timeout %u) created",
                res.get(), cmd.cmd, cmd.param, timeout );
 
+    return res;
+}
+
+//--------------------------------------------------------------------------------------------------
+
+command_ptr_t event_handler_t::create_mode_command( uint pin, bool turn_on, uint timeout )
+{
+    command_ptr_t res = nullptr; //std::make_shared< command_mode_t >( pin, turn_on, timeout );
+    LOG_DEBUG( "[cmd.%p] Mode command pin #%u, state: %s with timeout %u created",
+               res.get(), pin, ( turn_on ? "on" : "off" ), timeout );
     return res;
 }
 

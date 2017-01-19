@@ -1,6 +1,5 @@
 #include <common/StdAfx.h>
 
-#include <command/command_handler.h>
 #include <event/mode_event.h>
 
 
@@ -64,7 +63,7 @@ uint mode_event_t::get_mode( ) const
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void mode_event_t::set_actions( std::vector< std::shared_ptr< smarty::command_t > >& acts )
+void mode_event_t::set_actions( std::vector< command_ptr_t >& acts )
 {
     m_actions.swap( acts );
 }

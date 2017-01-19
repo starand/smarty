@@ -1,5 +1,6 @@
 #pragma once
 
+#include <command/command_handler.h>
 #include <event/event.h>
 
 
@@ -20,13 +21,13 @@ public:
 public: // event_intf_t
     virtual void on_event( );
     virtual uint get_mode( ) const;
-    virtual void set_actions( std::vector< std::shared_ptr< smarty::command_t > >& actions );
+    virtual void set_actions( std::vector< command_ptr_t >& actions );
 
 private:
     uint m_pin;
     uint m_mode;
 
     const uint& m_last_dblclicked;
-    std::vector< std::shared_ptr< smarty::command_t > > m_actions;
+    std::vector< command_ptr_t > m_actions;
     smarty::command_handler_t& m_command_handler;
 };

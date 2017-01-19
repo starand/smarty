@@ -21,7 +21,9 @@ namespace smarty
     class event_t;
 }
 
-typedef std::vector< std::shared_ptr< smarty::event_t > > events_t;
+
+typedef std::shared_ptr< smarty::event_t > event_ptr_t;
+typedef std::vector< event_ptr_t > events_t;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -47,22 +49,19 @@ public: // device_observer_t
     virtual void on_double_click( uint button_pin );
 
 public:
-    virtual std::shared_ptr< smarty::event_t >
-    create_device_event( DeviceEventType type, uint pin, TriggerState state, uint mode );
-
-    std::shared_ptr< smarty::event_t >
-    create_mode_event( uint mode, bool enabled );
+    event_ptr_t create_device_event( DeviceEventType type, uint pin, TriggerState state, uint mode );
+    event_ptr_t create_mode_event( uint mode, bool enabled );
 
 public: // thread_base_t
     virtual void do_run( );
     virtual void do_stop( );
 
 public: // smarty::command_handler_t
-    void add_command( std::shared_ptr< smarty::command_t > cmd );
+    void add_command( command_ptr_t cmd );
 
 public:
-    virtual std::shared_ptr< smarty::command_t >
-    create_device_command( const device_command_t& cmd, uint timeout );
+    command_ptr_t create_device_command( const device_command_t& cmd, uint timeout );
+    command_ptr_t create_mode_command( uint pin, bool turn_on, uint timeout );
 
 private:
     bool check_mode( const smarty::event_t& handler ) const;
@@ -88,7 +87,7 @@ private:
 
     uint m_event_modes_bitset;
 
-    lock_queue_t< std::shared_ptr< smarty::command_t > > m_cmd_queue;
+    lock_queue_t< command_ptr_t > m_cmd_queue;
     std::vector< light_object_t > m_lights;
 };
 
