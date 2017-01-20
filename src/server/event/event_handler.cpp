@@ -9,8 +9,6 @@
 #include <event/mode_event.h>
 
 #include <common/driver_intf.h>
-//#include <common/errors.h>
-//#include <common/mc_enum.h>
 #include <files/config.h>
 #include <utils/utils.h>
 
@@ -43,12 +41,11 @@ uint get_bit_offset( device_param_t param )
 
 //--------------------------------------------------------------------------------------------------
 
-event_handler_t::event_handler_t( const config_t& config, driver_intf_t& driver,
-                                  const device_state_t& state  )
+event_handler_t::event_handler_t( const config_t& config, device_t& device )
     : m_config( config )
-    , m_driver( driver )
+    , m_device( device )
     , m_event_parser( new event_parser_t( *this ) )
-    , m_device_state( state )
+    , m_device_state( )
     , m_last_dblclck_pin( INVALID_PIN )
     , m_light_events( )
     , m_button_events( )
@@ -269,7 +266,7 @@ void event_handler_t::do_stop( )
     class fake_command : public smarty::command_t
     {
     public:
-        virtual ErrorCode execute( driver_intf_t& driver ) { return ErrorCode::OK; }
+        virtual ErrorCode execute( device_t& device ) { return ErrorCode::OK; }
     };
 
     command_ptr_t fake( new fake_command( ) );
@@ -320,7 +317,7 @@ bool event_handler_t::check_mode( const smarty::event_t& handler ) const
 void event_handler_t::process_command( )
 {
     auto command = m_cmd_queue.pop( );
-    ErrorCode code = command->execute( m_driver );
+    ErrorCode code = command->execute( m_device );
 
     if ( code != ErrorCode::OK )
     {

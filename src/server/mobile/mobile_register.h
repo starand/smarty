@@ -21,8 +21,7 @@ namespace smarty
 class mobile_register_t : public client_heartbeat_t, public device_observer_t
 {
 public:
-    mobile_register_t( smarty::client_linker_t& desktop_connector, const config_t& config,
-                       const device_state_t& state );
+    mobile_register_t( smarty::client_linker_t& connector, const config_t& config );
     ~mobile_register_t( );
 
 protected: // client_heartbeat_t

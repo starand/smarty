@@ -13,12 +13,11 @@
 // mobile_register_t implementation
 //--------------------------------------------------------------------------------------------------
 
-mobile_register_t::mobile_register_t( smarty::client_linker_t& desktop_connector,
-                                      const config_t& config, const device_state_t& state )
-    : m_desktop_connector( desktop_connector )
+mobile_register_t::mobile_register_t( smarty::client_linker_t& connector, const config_t& config )
+    : m_desktop_connector( connector )
     , m_client_list( )
     , m_client_list_mutex( )
-    , m_prev_state( state )
+    , m_prev_state( )
     , m_config( config )
 {
 }

@@ -17,15 +17,11 @@ class smarty_config_t;
 class device_t : public thread_base_t, public device_observer_t
 {
 public:
-    device_t( driver_intf_t& driver, smarty_config_t& config,
-                         const device_state_t& state );
+    device_t( driver_intf_t& driver, smarty_config_t& config );
     ~device_t( );
 
-private:
-    void create_internal_objects( );
-    void destroy_internal_objects( );
-
-    void initialize( );
+public:
+    bool init( );
 
 public: // thread_base_t methods
     virtual void do_run( );

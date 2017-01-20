@@ -34,7 +34,6 @@ smarty_server_t::smarty_server_t( )
     , m_net_server( new net_server_t( m_clients_queue ) )
     , m_device( )
     , m_config( )
-    , m_driver( )
     , m_event_handler( )
     , m_handlers( nullptr )
     , m_mobile_register( )
@@ -58,15 +57,20 @@ smarty_server_t::~smarty_server_t( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_server_t::start_device( const device_state_t& state )
+bool smarty_server_t::start_device( std::shared_ptr< driver_intf_t > driver )
 {
     ASSERT( m_config.get( ) != nullptr );
-    ASSERT( m_driver.get( ) != nullptr );
+    ASSERT( driver.get( ) != nullptr );
 
-    m_device.reset( new device_t( *m_driver, *m_config, state ) );
+    m_device.reset( new device_t( *driver, *m_config ) );
+    if ( !m_device->init( ) )
+    {
+        ASSERT_FAIL( "Unable to init device" );
+    }
+
     if ( !m_device->start( ) )
     {
-        ASSERT_FAIL( "Unable to start device controller" );
+        ASSERT_FAIL( "Unable to start device" );
     }
 
     return true;
@@ -84,21 +88,18 @@ void smarty_server_t::stop_device( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_server_t::start_mobile_register( const device_state_t& state )
+bool smarty_server_t::start_mobile_register( )
 {
     ASSERT( m_mobile_register.get( ) == nullptr );
-    ASSERT( m_driver.get( ) != nullptr );
     ASSERT( m_config.get( ) != nullptr );
 
-    mobile_register_t* reg = new mobile_register_t( *this, *m_config, state );
-
-    m_mobile_register.reset( reg );
+    m_mobile_register.reset( new mobile_register_t( *this, *m_config ) );
     if ( !m_mobile_register->start( ) )
     {
         ASSERT_FAIL( "Unable to start mobile register" );
     }
 
-    m_device->add_observer( *reg );
+    m_device->add_observer( *m_mobile_register );
     return true;
 }
 
@@ -107,7 +108,6 @@ bool smarty_server_t::start_mobile_register( const device_state_t& state )
 void smarty_server_t::stop_mobile_register( )
 {
     ASSERT( m_mobile_register.get( ) != nullptr );
-    ASSERT( m_driver.get( ) != nullptr );
 
     m_device->remove_observer( *m_mobile_register );
     m_mobile_register->stop( );
@@ -173,17 +173,14 @@ void smarty_server_t::stop_client_handlers( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_server_t::start_event_handler( const device_state_t& state )
+bool smarty_server_t::start_event_handler( )
 {
     ASSERT( m_config.get( ) != nullptr );
-    ASSERT( m_driver.get( ) != nullptr );
 
-    event_handler_t* handler = new event_handler_t( *m_config, *m_driver, state );
-
-    m_event_handler.reset( handler );
+    m_event_handler.reset( new event_handler_t( *m_config, *m_device ) );
     if ( !m_event_handler->init( ) )
     {
-        ASSERT_FAIL( "Unable to start event handler" );
+        ASSERT_FAIL( "Unable to init event handler" );
     }
 
     if ( !m_event_handler->start( ) )
@@ -191,7 +188,7 @@ bool smarty_server_t::start_event_handler( const device_state_t& state )
         ASSERT_FAIL( "Unable to start event handler" );
     }
 
-    m_device->add_observer( *handler );
+    m_device->add_observer( *m_event_handler );
     return true;
 }
 
@@ -200,7 +197,6 @@ bool smarty_server_t::start_event_handler( const device_state_t& state )
 void smarty_server_t::stop_event_handler( )
 {
     ASSERT( m_event_handler.get( ) != nullptr );
-    ASSERT( m_driver.get( ) != nullptr );
 
     m_device->remove_observer( *m_event_handler );
 
@@ -246,23 +242,11 @@ void smarty_server_t::clean_clients_queue( )
 ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
                                   std::shared_ptr< smarty_config_t > config )
 {
-    m_driver = driver;
     m_config = config;
 
-    // to get real state we have to execute command
-    device_command_t status_command = { EC_STATUS, 0x00 };
-    m_driver->execute_command( status_command );
-
-    device_state_t state;
-    if ( m_driver->get_state( state ) != ErrorCode::OK )
-    {
-        LOG_ERROR( "Unable to retreive device state" );
-        return ErrorCode::OPERATION_FAILED;
-    }
-
-    return start_device( state ) &&
-           start_event_handler( state ) && start_mobile_register( state ) &&
-           start_desktop_register( ) && start_client_handlers( ) && start_net_server( )
+    return start_device( driver ) && start_event_handler( ) &&
+           start_mobile_register( ) && start_desktop_register( ) &&
+           start_client_handlers( ) && start_net_server( )
            ? ErrorCode::OK : ErrorCode::OPERATION_FAILED;
 }
 

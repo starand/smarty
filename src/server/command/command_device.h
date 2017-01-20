@@ -14,7 +14,7 @@ public:
     command_device_t( const device_command_t& cmd, uint timeout, light_object_t& light_object );
 
 public:
-    virtual ErrorCode execute( driver_intf_t& driver );
+    virtual ErrorCode execute( device_t& device );
 
 private:
     device_command_t m_cmd;

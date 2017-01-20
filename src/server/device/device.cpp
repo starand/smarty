@@ -17,43 +17,40 @@
 // device_t implementation
 //--------------------------------------------------------------------------------------------------
 
-device_t::device_t( driver_intf_t& driver, smarty_config_t& config,
-                                          const device_state_t& state )
+device_t::device_t( driver_intf_t& driver, smarty_config_t& config )
     : m_driver( driver )
     , m_config( config )
-    , m_device_state( state )
+    , m_device_state( )
     , m_double_click_pin( PIN_NOT_SET )
     , m_update_event( true, false )
-    , m_prev_device_state( state )
+    , m_prev_device_state( )
     , m_observers( )
 {
     m_driver.get_state( m_device_state );
-    create_internal_objects( );
+    m_prev_device_state = m_device_state;
 }
 
 //--------------------------------------------------------------------------------------------------
 
 device_t::~device_t( )
 {
-    destroy_internal_objects( );
 }
 
 //--------------------------------------------------------------------------------------------------
 
-void device_t::create_internal_objects( )
+bool device_t::init( )
 {
-}
+    // to get real state we have to execute command
+    device_command_t status_command = { EC_STATUS, 0x00 };
+    m_driver.execute_command( status_command );
 
-//--------------------------------------------------------------------------------------------------
+    device_state_t state;
+    if ( m_driver.get_state( state ) != ErrorCode::OK )
+    {
+        LOG_ERROR( "Unable to retreive device state" );
+        return false;
+    }
 
-void device_t::destroy_internal_objects( )
-{
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void device_t::initialize( )
-{
     auto off_on_start_node = m_config[ DEVICE_SECTION ][ DEVICE_OFF_ON_START ];
     ushort off_on_start = off_on_start_node.isUInt( ) ? off_on_start_node.asUInt( ) : 0;
 
@@ -62,6 +59,8 @@ void device_t::initialize( )
         device_command_t command = { EC_TURNALL, 0x00 };
         m_driver.execute_command( command ); // turn all off lights on start
     }
+
+    return true;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -70,7 +69,6 @@ void device_t::initialize( )
 void device_t::do_run( )
 {
     m_driver.add_observer( *this );
-    initialize( );
 
     while ( true )
     {
