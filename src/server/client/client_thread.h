@@ -23,7 +23,7 @@ class client_thread_t : public thread_base_t
 {
 public:
     client_thread_t( smarty::client_handler_factory_t& clients_factory,
-                      clients_queue_t& clients_queue );
+                     clients_queue_t& clients_queue );
     ~client_thread_t( );
 
 public:

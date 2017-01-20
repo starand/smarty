@@ -21,9 +21,9 @@ device_t::device_t( driver_intf_t& driver, smarty_config_t& config )
     : m_driver( driver )
     , m_config( config )
     , m_device_state( )
+    , m_prev_device_state( )
     , m_double_click_pin( PIN_NOT_SET )
     , m_update_event( true, false )
-    , m_prev_device_state( )
     , m_observers( )
 {
     m_driver.get_state( m_device_state );

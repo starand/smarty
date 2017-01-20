@@ -9,7 +9,6 @@
 #include <set>
 
 
-class client_thread_t;
 class client_handler_intf_t;
 class driver_intf_t;
 class desktop_register_t;
@@ -40,9 +39,6 @@ private:
 
     bool start_desktop_register( );
     void stop_desktop_register( );
-
-    bool start_client_handlers( );
-    void stop_client_handlers( );
 
     bool start_event_handler( );
     void stop_event_handler( );
@@ -77,8 +73,6 @@ private:
     std::shared_ptr< smarty_config_t > m_config;
 
     std::unique_ptr< event_handler_t > m_event_handler;
-
-    client_thread_t **m_handlers;
 
     std::unique_ptr< mobile_register_t > m_mobile_register;
     std::unique_ptr< desktop_register_t > m_desktop_register;

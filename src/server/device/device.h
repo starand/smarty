@@ -55,9 +55,9 @@ private:
     smarty_config_t& m_config;
 
     device_state_t m_device_state;
-    uint m_double_click_pin;
-    event_t m_update_event;
     device_state_t m_prev_device_state;
+    uint m_double_click_pin;
 
+    event_t m_update_event;
     std::set< device_observer_t* > m_observers;
 };

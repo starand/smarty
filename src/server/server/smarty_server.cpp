@@ -1,6 +1,5 @@
 #include <common/StdAfx.h>
 
-#include <client/client_thread.h>
 #include <desktop/desktop_handler.h>
 #include <desktop/desktop_register.h>
 #include <device/device.h>
@@ -23,18 +22,15 @@
 #endif
 
 
-#define HANDLERS_COUNT	10
-
-
 // smarty_server_t implementation
 //--------------------------------------------------------------------------------------------------
 
 smarty_server_t::smarty_server_t( )
-    : m_net_server( new net_server_t( ) )
+    : m_net_server( new net_server_t( *this ) )
     , m_device( )
     , m_config( )
     , m_event_handler( )
-    , m_handlers( nullptr )
+
     , m_mobile_register( )
     , m_desktop_register( new desktop_register_t( *this ) )
 {
@@ -134,43 +130,6 @@ void smarty_server_t::stop_desktop_register( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_server_t::start_client_handlers( )
-{
-    ASSERT( m_handlers == nullptr );
-    m_handlers = (client_thread_t **)malloc( sizeof( client_thread_t * ) * HANDLERS_COUNT );
-    for ( sizeint idx = 0; idx < HANDLERS_COUNT; ++idx )
-    {
-        client_thread_t *handler = new client_thread_t( *this, m_net_server->get_client_queue( ) );
-        if ( !handler->start( ) )
-        {
-            ASSERT_FAIL( "Unable to start client handler" );
-        }
-        m_handlers[ idx ] = handler;
-    }
-
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void smarty_server_t::stop_client_handlers( )
-{
-    ASSERT( m_handlers != nullptr );
-
-    for ( sizeint idx = 0; idx < HANDLERS_COUNT; ++idx )
-    {
-        client_thread_t *handler = m_handlers[ idx ];
-        ASSERT( handler != nullptr );
-
-        handler->stop( );
-        handler->wait( );
-    }
-
-    free( m_handlers );
-}
-
-//--------------------------------------------------------------------------------------------------
-
 bool smarty_server_t::start_event_handler( )
 {
     ASSERT( m_config.get( ) != nullptr );
@@ -231,9 +190,8 @@ ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
 {
     m_config = config;
 
-    return start_device( driver ) && start_event_handler( ) &&
-           start_mobile_register( ) && start_desktop_register( ) &&
-           start_net_server( ) && start_client_handlers( )
+    return start_device( driver ) && start_event_handler( ) && start_mobile_register( ) && 
+           start_desktop_register( ) && start_net_server( )
            ? ErrorCode::OK : ErrorCode::OPERATION_FAILED;
 }
 
@@ -243,7 +201,6 @@ ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
 ErrorCode smarty_server_t::stop( )
 {
     stop_net_server( );
-    stop_client_handlers( );
     stop_desktop_register( );
     stop_mobile_register( );
     stop_device( );
@@ -288,8 +245,11 @@ smarty_server_t::create_mobile_handler( socket_t& socket, const char *endpoint,
     ASSERT( m_config.get( ) != nullptr );
     ASSERT( m_mobile_register.get( ) != nullptr );
 
-    return new mobile_handler_t( socket, endpoint, *m_config, *m_device, *m_mobile_register, *this,
+    std::string ep( endpoint );
+    return new mobile_handler_t( socket, ep, *m_config, *m_device, *m_mobile_register, *this,
                                  hs_req, *m_event_handler );
+
+
 }
 
 //--------------------------------------------------------------------------------------------------
