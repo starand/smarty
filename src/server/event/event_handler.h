@@ -1,6 +1,7 @@
 #pragma once
 
 #include <command/command_handler.h>
+#include <common/driver_intf.h>
 #include <common/enums.h>
 
 #include <lock_queue.h>
@@ -10,13 +11,14 @@
 
 
 class config_t;
+class deivce_t;
 struct device_state_t;
 class event_parser_t;
 class light_object_t;
-class deivce_t;
 
 namespace smarty
 {
+    class client_linker_t;
     class command_t;
     class event_t;
 }
@@ -33,13 +35,14 @@ class event_handler_t
     , public smarty::command_handler_t
 {
 public:
-    event_handler_t( const config_t& config, device_t& device );
+    event_handler_t( const config_t& config, device_t& device, smarty::client_linker_t& clients );
     ~event_handler_t( );
 
 public:
     bool init( );
 
     void update_modes( uint bitset );
+    void set_mode_bit( uint bit, bool onOff );
     uint get_modes_bitset( ) const;
 
 public: // device_observer_t
@@ -73,6 +76,7 @@ private:
 private:
     const config_t& m_config;
     device_t& m_device;
+    smarty::client_linker_t& m_clients;
 
     std::unique_ptr< event_parser_t > m_event_parser;
 

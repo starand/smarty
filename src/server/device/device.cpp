@@ -26,8 +26,6 @@ device_t::device_t( driver_intf_t& driver, smarty_config_t& config )
     , m_update_event( true, false )
     , m_observers( )
 {
-    m_driver.get_state( m_device_state );
-    m_prev_device_state = m_device_state;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -50,6 +48,9 @@ bool device_t::init( )
         LOG_ERROR( "Unable to retreive device state" );
         return false;
     }
+
+    m_device_state = m_prev_device_state = state;
+    LOG_DEBUG("[sensors] state: %s", m_config.get_sensor_names( m_device_state.sensors ).c_str( ) );
 
     auto off_on_start_node = m_config[ DEVICE_SECTION ][ DEVICE_OFF_ON_START ];
     ushort off_on_start = off_on_start_node.isUInt( ) ? off_on_start_node.asUInt( ) : 0;
@@ -137,6 +138,13 @@ lights_state_t device_t::get_lights_state( )
 
 //--------------------------------------------------------------------------------------------------
 
+device_state_t device_t::get_device_state( ) const
+{
+    return m_device_state;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 void device_t::wait_state_update( ) const
 {
     m_update_event.wait( );
@@ -200,8 +208,8 @@ void device_t::check_buttons_changes( )
         uchar changed = prev_state ^ current_state;
         string names = m_config.get_light_names( changed );
 
-        LOG_DEBUG( "[device] Buttons state changed to %u (prev %u): ..... %s %s", (uint)current_state,
-                   (uint)prev_state, names.c_str( ), ( current_state > prev_state ? "on" : "off" ) );
+        LOG_DEBUG( "[buttons] %u -> %u: ..... %s %s", (uint)prev_state, (uint)current_state,
+                   names.c_str( ), ( current_state > prev_state ? "on" : "off" ) );
     }
 }
 
@@ -222,8 +230,8 @@ void device_t::check_lights_changes( )
         uchar changed = prev_state ^ current_state;
         string names = m_config.get_light_names( changed );
 
-        LOG_DEBUG( "[device] Lights state changed to %u (prev %u): ..... %s %s", (uint)current_state,
-                   (uint)prev_state, names.c_str( ), ( current_state > prev_state ? "on" : "off" ) );
+        LOG_DEBUG( "[lights] %u -> %u: ..... %s %s", (uint)prev_state, (uint)current_state,
+                   names.c_str( ), ( current_state > prev_state ? "on" : "off" ) );
     }
 }
 
@@ -244,8 +252,8 @@ void device_t::check_sensors_changes( )
         uchar changed = prev_state ^ current_state;
         string names = m_config.get_sensor_names( changed );
 
-        LOG_TRACE( "[device] Sensor state changed to %u (prev %u): .... %s %s", current_state,
-                   prev_state, names.c_str( ), ( current_state > prev_state ? "high" : "low" ) );
+        LOG_TRACE( "[sensors] %u -> %u: .... %s %s", prev_state, current_state,
+                   names.c_str( ), ( current_state > prev_state ? "high" : "low" ) );
     }
 }
 
@@ -261,7 +269,7 @@ void device_t::check_double_click( )
         }
 
         string name = m_config.get_light_names( 1 << m_double_click_pin );
-        LOG_TRACE( "[device] Button double click %u: .... %s", m_double_click_pin, name.c_str( ) );
+        LOG_TRACE( "[button] double click %u: .... %s", m_double_click_pin, name.c_str( ) );
     }
 }
 

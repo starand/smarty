@@ -54,7 +54,7 @@ public: // server_intf_t implementation
 public: // client_linker_t
     virtual void on_notify_mobile_clients( const mobile_notification_t& notification );
     virtual void on_execute_desktop_command( const desktop_command_request_t& command );
-    virtual void on_update_modes_request( const update_modes_request_t& request );
+    virtual void on_update_modes_request( uint modes_bitset );
 
 public: // client_handler_factory_t methods
     virtual smarty::client_handler_t*

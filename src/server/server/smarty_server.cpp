@@ -134,7 +134,7 @@ bool smarty_server_t::start_event_handler( )
 {
     ASSERT( m_config.get( ) != nullptr );
 
-    m_event_handler.reset( new event_handler_t( *m_config, *m_device ) );
+    m_event_handler.reset( new event_handler_t( *m_config, *m_device, *this ) );
     if ( !m_event_handler->init( ) )
     {
         ASSERT_FAIL( "Unable to init event handler" );
@@ -229,10 +229,10 @@ void smarty_server_t::on_execute_desktop_command( const desktop_command_request_
 //--------------------------------------------------------------------------------------------------
 
 /*virtual */
-void smarty_server_t::on_update_modes_request( const update_modes_request_t& request )
+void smarty_server_t::on_update_modes_request( uint modes_bitset )
 {
-    m_event_handler->update_modes( request.state );
-    m_mobile_register->notify_modes_update( m_event_handler->get_modes_bitset( ) );
+    m_mobile_register->notify_modes_update( modes_bitset );
+    // TODO: m_desktop_register also update
 }
 
 //--------------------------------------------------------------------------------------------------

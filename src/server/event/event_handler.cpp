@@ -1,6 +1,9 @@
 #include <common/StdAfx.h>
 
+#include <client/client_linker.h>
 #include <command/command_device.h>
+#include <command/command_mode.h>
+#include <device/device.h>
 #include <device/light_object.h>
 #include <event/device_event.h>
 #include <event/double_click_event.h>
@@ -41,11 +44,13 @@ uint get_bit_offset( device_param_t param )
 
 //--------------------------------------------------------------------------------------------------
 
-event_handler_t::event_handler_t( const config_t& config, device_t& device )
+event_handler_t::event_handler_t( const config_t& config, device_t& device,
+                                  smarty::client_linker_t& clients )
     : m_config( config )
     , m_device( device )
+    , m_clients( clients )
     , m_event_parser( new event_parser_t( *this ) )
-    , m_device_state( )
+    , m_device_state( device.get_device_state( ) )
     , m_last_dblclck_pin( INVALID_PIN )
     , m_light_events( )
     , m_button_events( )
@@ -104,12 +109,40 @@ bool event_handler_t::init_light_objects( )
 
 void event_handler_t::update_modes( uint bitset )
 {
+    if ( bitset == m_event_modes_bitset )
+    {
+        return;
+    }
+
     m_event_modes_bitset = bitset;
     LOG_TRACE( "[event.modes] update modes with value %u", bitset );
 
     for ( auto& event_handler : m_mode_events )
     {
         event_handler->on_event( );
+    }
+
+    m_clients.on_update_modes_request( get_modes_bitset( ) );
+}
+
+//--------------------------------------------------------------------------------------------------
+
+void event_handler_t::set_mode_bit( uint bit, bool onOff )
+{
+    uint bitset = m_event_modes_bitset;
+    if ( onOff )
+    {
+        m_event_modes_bitset |= 1 << bit;
+    }
+    else
+    {
+        m_event_modes_bitset &= ~( 1 << bit );
+    }
+
+    if ( m_event_modes_bitset != bitset )
+    {
+        LOG_TRACE( "[event.modes] update mode %u with value %s", bit, ( onOff ? "on" : "off" ) );
+        m_clients.on_update_modes_request( get_modes_bitset( ) );
     }
 }
 
@@ -298,7 +331,7 @@ command_ptr_t event_handler_t::create_device_command( const device_command_t& cm
 
 command_ptr_t event_handler_t::create_mode_command( uint pin, bool turn_on, uint timeout )
 {
-    command_ptr_t res = nullptr; //std::make_shared< command_mode_t >( pin, turn_on, timeout );
+    command_ptr_t res = std::make_shared< command_mode_t >( pin, turn_on, *this, timeout );
     LOG_DEBUG( "[cmd.%p] Mode command pin #%u, state: %s with timeout %u created",
                res.get(), pin, ( turn_on ? "on" : "off" ), timeout );
     return res;

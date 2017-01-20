@@ -4,7 +4,6 @@
 #include <device/device.h>
 #include <device/light_object.h>
 #include <event/event_handler.h>
-#include <event/event_parser.h>
 #include <mobile/mobile_handler.h>
 #include <mobile/mobile_register.h>
 #include <server/smarty_server.h>
@@ -83,7 +82,7 @@ bool mobile_handler_t::make_handshake( )
     {
         response.state = ES_OK;
         response.light_state = m_device.get_lights_state( );
-        response.event_modes = m_smarty_server.get_event_handler( ).get_modes_bitset( );
+        response.event_modes = m_event_handler.get_modes_bitset( );
 
         int nHeartBeatPeriod = DEFAULT_HEARTBEAT_PERIOD;
         auto hb_period_node = m_config[ SERVER_SECTION ][ SERVER_HB_PERIOD ];
@@ -174,7 +173,7 @@ void mobile_handler_t::process_client( )
         {
             LOG_DEBUG( "[mobile] Update modes request from %s. State: %u",
                         m_end_point.c_str( ), request.state );
-            m_smarty_server.on_update_modes_request( request );
+            m_event_handler.update_modes( request.state );
         }
         RECV_PACKET_CASE( disconnect_request_t, request )
         {

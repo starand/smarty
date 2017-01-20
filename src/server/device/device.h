@@ -35,6 +35,7 @@ public: // device_observer_t methods
 
 public:
     lights_state_t get_lights_state( );
+    device_state_t get_device_state( ) const;
     void wait_state_update( ) const;
 
     ErrorCode execute_command( device_cmd_t command, device_param_t param );
