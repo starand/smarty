@@ -30,8 +30,7 @@
 //--------------------------------------------------------------------------------------------------
 
 smarty_server_t::smarty_server_t( )
-    : m_clients_queue( )
-    , m_net_server( new net_server_t( m_clients_queue ) )
+    : m_net_server( new net_server_t( ) )
     , m_device( )
     , m_config( )
     , m_event_handler( )
@@ -52,7 +51,6 @@ smarty_server_t::smarty_server_t( )
 
 smarty_server_t::~smarty_server_t( )
 {
-    clean_clients_queue( );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -142,7 +140,7 @@ bool smarty_server_t::start_client_handlers( )
     m_handlers = (client_thread_t **)malloc( sizeof( client_thread_t * ) * HANDLERS_COUNT );
     for ( sizeint idx = 0; idx < HANDLERS_COUNT; ++idx )
     {
-        client_thread_t *handler = new client_thread_t( *this, get_client_queue( ) );
+        client_thread_t *handler = new client_thread_t( *this, m_net_server->get_client_queue( ) );
         if ( !handler->start( ) )
         {
             ASSERT_FAIL( "Unable to start client handler" );
@@ -227,17 +225,6 @@ void smarty_server_t::stop_net_server( )
 
 //--------------------------------------------------------------------------------------------------
 
-void smarty_server_t::clean_clients_queue( )
-{
-    while ( !m_clients_queue.empty( ) )
-    {
-        socket_t* client = m_clients_queue.pop( );
-        FREE_POINTER( client );
-    }
-}
-
-//--------------------------------------------------------------------------------------------------
-
 /*virtual */
 ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
                                   std::shared_ptr< smarty_config_t > config )
@@ -246,7 +233,7 @@ ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
 
     return start_device( driver ) && start_event_handler( ) &&
            start_mobile_register( ) && start_desktop_register( ) &&
-           start_client_handlers( ) && start_net_server( )
+           start_net_server( ) && start_client_handlers( )
            ? ErrorCode::OK : ErrorCode::OPERATION_FAILED;
 }
 

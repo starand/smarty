@@ -1,9 +1,7 @@
-#ifndef __TCP_SERVER_H_INCLUDED
-#define __TCP_SERVER_H_INCLUDED
+#pragma once
 
 #include <client/client_linker.h>
 #include <client/client_handler_factory.h>
-#include <client/client_queue.h>
 
 #include <common/server_intf.h>
 
@@ -52,8 +50,6 @@ private:
     bool start_net_server( );
     void stop_net_server( );
 
-    void clean_clients_queue( );
-
 public: // server_intf_t implementation
     virtual ErrorCode start( std::shared_ptr< driver_intf_t > driver,
                              std::shared_ptr< smarty_config_t > config );
@@ -72,15 +68,9 @@ public: // client_handler_factory_t methods
     create_desktop_handler( socket_t& socket, const char *endpoint, packet_intf_t *hs_req );
 
 public:
-    clients_queue_t& get_client_queue( ) const
-    {
-        return const_cast<clients_queue_t& >( m_clients_queue );
-    }
-
     const event_handler_t& get_event_handler( ) const;
 
 private:
-    clients_queue_t m_clients_queue;
     std::unique_ptr< net_server_t > m_net_server;
     std::unique_ptr< device_t > m_device;
 
@@ -93,5 +83,3 @@ private:
     std::unique_ptr< mobile_register_t > m_mobile_register;
     std::unique_ptr< desktop_register_t > m_desktop_register;
 };
-
-#endif // __TCP_SERVER_H_INCLUDED
