@@ -1,6 +1,5 @@
 #include <common/StdAfx.h>
 
-#include <client/client_queue.h>
 #include <server/net_server.h>
 
 #include <net/xsocket.h>

@@ -1,7 +1,8 @@
 #include <common/StdAfx.h>
 
-#include <client/client_thread.h>
 #include <client/client_handler.h>
+#include <client/client_queue.h>
+#include <client/client_thread.h>
 #include <server/smarty_server.h>
 
 #include <common/client_protocol.h>
