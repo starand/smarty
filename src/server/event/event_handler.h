@@ -19,7 +19,7 @@ class light_object_t;
 
 namespace smarty
 {
-    class client_linker_t;
+    class client_register_t;
     class command_t;
     class event_t;
 }
@@ -36,7 +36,7 @@ class event_handler_t
     , public smarty::command_handler_t
 {
 public:
-    event_handler_t( const config_t& config, device_t& device, smarty::client_linker_t& clients );
+    event_handler_t( const config_t& config, device_t& device, smarty::client_register_t& clients );
     ~event_handler_t( );
 
 public:
@@ -77,7 +77,7 @@ private:
 private:
     const config_t& m_config;
     device_t& m_device;
-    smarty::client_linker_t& m_clients;
+    smarty::client_register_t& m_clients;
 
     std::unique_ptr< event_parser_t > m_event_parser;
 

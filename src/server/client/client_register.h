@@ -9,10 +9,10 @@ namespace smarty
 
 //--------------------------------------------------------------------------------------------------
 
-class client_linker_t
+class client_register_t
 {
 public:
-    virtual ~client_linker_t( ) { }
+    virtual ~client_register_t( ) { }
 
     virtual void on_notify_mobile_clients( const mobile_notification_t& notification ) = 0;
     virtual void on_execute_desktop_command( const desktop_command_request_t& command ) = 0;

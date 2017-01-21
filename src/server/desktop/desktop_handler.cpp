@@ -21,7 +21,7 @@ extern const char g_szUnableToSendResponse[];
 
 desktop_handler_t::desktop_handler_t( socket_t& socket, const std::string& endpoint,
                                       smarty_config_t& config, desktop_register_t& desktop_register,
-                                      smarty::client_linker_t& smarty_server, packet_intf_t *hs_req )
+                                      smarty::client_register_t& clients, packet_intf_t *hs_req )
     : m_client_name( )
     , m_end_point( endpoint )
     , m_desktop_index( 0 )
@@ -29,7 +29,7 @@ desktop_handler_t::desktop_handler_t( socket_t& socket, const std::string& endpo
     , m_socket( socket )
     , m_config( config )
     , m_desktop_register( desktop_register )
-    , m_smarty_server( smarty_server )
+    , m_clients( clients )
 {
     desktop_handshake_request_t *request = dynamic_cast<desktop_handshake_request_t *>( hs_req );
     ASSERT( request != NULL );
@@ -119,7 +119,7 @@ void desktop_handler_t::process_client( )
                 get_mobile_notification_name( notification.type ), notification.type,
                 notification.params.c_str( ) );
 
-            m_smarty_server.on_notify_mobile_clients( notification );
+            m_clients.on_notify_mobile_clients( notification );
         }
         RECV_PACKET_CASE( desktop_heartbeat_response_t, resposne )
         {

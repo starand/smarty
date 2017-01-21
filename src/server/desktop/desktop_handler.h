@@ -12,7 +12,7 @@ class packet_intf_t;
 
 namespace smarty
 {
-    class client_linker_t;
+    class client_register_t;
 }
 
 
@@ -20,7 +20,7 @@ class desktop_handler_t : public smarty::client_handler_t
 {
 public:
     desktop_handler_t( socket_t& socket, const std::string& endpoint, smarty_config_t& config,
-                       desktop_register_t& desktop_register, smarty::client_linker_t& smarty_server,
+                       desktop_register_t& desktop_register, smarty::client_register_t& clients,
                        packet_intf_t *hs_req );
     ~desktop_handler_t( );
 
@@ -39,7 +39,7 @@ private:
     smarty_config_t& m_config;
 
     desktop_register_t& m_desktop_register;
-    smarty::client_linker_t& m_smarty_server;
+    smarty::client_register_t& m_clients;
 };
 
 #endif // __DESKTOP_HANDLER_H_INCLUDED

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <client/client_linker.h>
+#include <client/client_register.h>
 #include <client/client_handler_factory.h>
 
 #include <common/server_intf.h>
@@ -23,7 +23,7 @@ struct update_modes_request_t;
 
 class smarty_server_t
     : public server_intf_t
-    , public smarty::client_linker_t
+    , public smarty::client_register_t
     , public smarty::client_handler_factory_t
 {
 public:
@@ -51,7 +51,7 @@ public: // server_intf_t implementation
                              std::shared_ptr< smarty_config_t > config );
     virtual ErrorCode stop( );
 
-public: // client_linker_t
+public: // client_register_t
     virtual void on_notify_mobile_clients( const mobile_notification_t& notification );
     virtual void on_execute_desktop_command( const desktop_command_request_t& command );
     virtual void on_update_modes_request( uint modes_bitset );

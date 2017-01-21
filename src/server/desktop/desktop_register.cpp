@@ -1,6 +1,6 @@
 #include <common/StdAfx.h>
 
-#include <client/client_linker.h>
+#include <client/client_register.h>
 #include <desktop/desktop_register.h>
 
 #include <common/client_protocol.h>
@@ -11,10 +11,10 @@
 // desktop_register implementation
 //--------------------------------------------------------------------------------------------------
 
-desktop_register_t::desktop_register_t( smarty::client_linker_t& mobile_connector )
+desktop_register_t::desktop_register_t( smarty::client_register_t& clients )
     : m_desktops( )
     , m_clients_lock( )
-    , m_mobile_connector( mobile_connector )
+    , m_clients( clients )
 {
 }
 
@@ -148,7 +148,7 @@ void desktop_register_t::do_remove_desktop( uint index )
 
 void desktop_register_t::send_notification( const mobile_notification_t& notification )
 {
-    m_mobile_connector.on_notify_mobile_clients( notification );
+    m_clients.on_notify_mobile_clients( notification );
 }
 
 //--------------------------------------------------------------------------------------------------

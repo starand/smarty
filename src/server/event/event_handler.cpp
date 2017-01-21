@@ -1,6 +1,6 @@
 #include <common/StdAfx.h>
 
-#include <client/client_linker.h>
+#include <client/client_register.h>
 #include <command/command_device.h>
 #include <command/command_mode.h>
 #include <device/device.h>
@@ -45,7 +45,7 @@ uint get_bit_offset( device_param_t param )
 //--------------------------------------------------------------------------------------------------
 
 event_handler_t::event_handler_t( const config_t& config, device_t& device,
-                                  smarty::client_linker_t& clients )
+                                  smarty::client_register_t& clients )
     : m_config( config )
     , m_device( device )
     , m_clients( clients )
@@ -326,7 +326,7 @@ command_ptr_t event_handler_t::create_device_command( const device_command_t& cm
 
 command_ptr_t event_handler_t::create_mode_command( uint pin, bool turn_on, uint timeout )
 {
-    mode_cmd_t{ pin, turn_on };
+    mode_cmd_t cmd{ pin, turn_on };
     command_ptr_t res = std::make_shared< command_mode_t >( cmd, timeout, *this );
     LOG_DEBUG( "[cmd.%p] Mode command pin #%u, state: %s with timeout %u created",
                res.get(), pin, ( turn_on ? "on" : "off" ), timeout );

@@ -1,6 +1,6 @@
 #include <common/StdAfx.h>
 
-#include <client/client_linker.h>
+#include <client/client_register.h>
 #include <common/client_protocol.h>
 #include <mobile/mobile_register.h>
 
@@ -13,8 +13,8 @@
 // mobile_register_t implementation
 //--------------------------------------------------------------------------------------------------
 
-mobile_register_t::mobile_register_t( smarty::client_linker_t& connector, const config_t& config )
-    : m_desktop_connector( connector )
+mobile_register_t::mobile_register_t( smarty::client_register_t& clients, const config_t& config )
+    : m_clients( clients )
     , m_client_list( )
     , m_client_list_mutex( )
     , m_prev_state( )
@@ -237,7 +237,7 @@ void mobile_register_t::update_clients( const lights_state_t& state )
 
 void mobile_register_t::execute_desktop_command( const desktop_command_request_t& command )
 {
-    m_desktop_connector.on_execute_desktop_command( command );
+    m_clients.on_execute_desktop_command( command );
 }
 
 //--------------------------------------------------------------------------------------------------

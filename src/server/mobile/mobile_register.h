@@ -14,14 +14,14 @@ class socket_t;
 
 namespace smarty
 {
-    class client_linker_t;
+    class client_register_t;
 }
 
 
 class mobile_register_t : public client_heartbeat_t, public device_observer_t
 {
 public:
-    mobile_register_t( smarty::client_linker_t& connector, const config_t& config );
+    mobile_register_t( smarty::client_register_t& clients, const config_t& config );
     ~mobile_register_t( );
 
 protected: // client_heartbeat_t
@@ -54,7 +54,7 @@ private:
     void drop_client( client_list_t::iterator& itList );
 
 private:
-    smarty::client_linker_t& m_desktop_connector;
+    smarty::client_register_t& m_clients;
 
     client_list_t m_client_list;
     mutex_t m_client_list_mutex;

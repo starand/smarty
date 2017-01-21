@@ -13,14 +13,14 @@ struct mobile_notification_t;
 
 namespace smarty
 {
-    class client_linker_t;
+    class client_register_t;
 }
 
 
 class desktop_register_t : public client_heartbeat_t
 {
 public:
-    desktop_register_t( smarty::client_linker_t& mobile_connector );
+    desktop_register_t( smarty::client_register_t& clients );
     ~desktop_register_t( );
 
 protected: // client_heartbeat_t
@@ -53,7 +53,7 @@ private:
     desktop_info_list_t m_desktops;
     mutex_t m_clients_lock;
 
-    smarty::client_linker_t& m_mobile_connector;
+    smarty::client_register_t& m_clients;
 };
 
 #endif // __DESKTOP_REGISTER_H_INCLUDED
