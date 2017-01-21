@@ -5,19 +5,24 @@
 
 class event_handler_t;
 
+struct mode_cmd_t
+{
+    uint mode_bit;
+    bool onOff;
+};
+
 class command_mode_t : public smarty::command_t
 {
 public:
-    command_mode_t( uint mode_bit, bool onOff, event_handler_t& event_handler, uint delay );
+    command_mode_t( mode_cmd_t cmd, uint delay, event_handler_t& event_handler );
 
 public:
     virtual ErrorCode execute( );
 
 private:
-    event_handler_t& m_event_handler;
-
-    uint m_mode_bit;
-    bool m_onOff;
+    mode_cmd_t m_cmd;
     uint m_delay;
+
+    event_handler_t& m_event_handler;
 };
 

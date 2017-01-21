@@ -215,10 +215,8 @@ void event_handler_t::on_double_click( uint button_pin )
 
 //--------------------------------------------------------------------------------------------------
 
-/*virtual */
-event_ptr_t
-event_handler_t::create_device_event( DeviceEventType type,
-                                      uint pin, TriggerState state, uint mode )
+event_ptr_t event_handler_t::create_device_event( DeviceEventType type, uint pin, 
+                                                  TriggerState state, uint mode )
 {
     event_ptr_t event;
 
@@ -258,9 +256,7 @@ event_handler_t::create_device_event( DeviceEventType type,
 
 //--------------------------------------------------------------------------------------------------
 
-/*virtual */
-event_ptr_t
-event_handler_t::create_mode_event( uint mode, bool enabled )
+event_ptr_t event_handler_t::create_mode_event( uint mode, bool enabled )
 {
     auto event = std::make_shared< mode_event_t >( mode, enabled, *this, m_event_modes_bitset );
     m_mode_events.emplace_back( event );
@@ -323,7 +319,6 @@ command_ptr_t event_handler_t::create_device_command( const device_command_t& cm
     auto res = std::make_shared< command_device_t >( cmd, timeout, m_lights[ idx ], m_device );
     LOG_DEBUG( "[cmd.%p] Device command [%u:%u] with params (timeout %u) created",
                res.get(), cmd.cmd, cmd.param, timeout );
-
     return res;
 }
 
@@ -331,7 +326,8 @@ command_ptr_t event_handler_t::create_device_command( const device_command_t& cm
 
 command_ptr_t event_handler_t::create_mode_command( uint pin, bool turn_on, uint timeout )
 {
-    command_ptr_t res = std::make_shared< command_mode_t >( pin, turn_on, *this, timeout );
+    mode_cmd_t{ pin, turn_on };
+    command_ptr_t res = std::make_shared< command_mode_t >( cmd, timeout, *this );
     LOG_DEBUG( "[cmd.%p] Mode command pin #%u, state: %s with timeout %u created",
                res.get(), pin, ( turn_on ? "on" : "off" ), timeout );
     return res;

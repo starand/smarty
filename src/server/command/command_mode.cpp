@@ -6,21 +6,20 @@
 
 //--------------------------------------------------------------------------------------------------
 
-command_mode_t::command_mode_t( uint mode_bit, bool onOff, event_handler_t& handler, uint delay )
-    : m_event_handler( handler )
-    , m_mode_bit( mode_bit )
-    , m_onOff( onOff )
+command_mode_t::command_mode_t( mode_cmd_t cmd, uint delay, event_handler_t& event_handler )
+    : m_cmd( cmd )
     , m_delay( delay )
+    , m_event_handler( event_handler )
 {
     LOG_TRACE( "[cmd.%p] Mode command created: mode bit %u, onOff: %s, delay = %u",
-               this, mode_bit, ( m_onOff ? "on" : "off" ), delay );
+               this, m_cmd.mode_bit, ( m_cmd.onOff ? "on" : "off" ), m_delay );
 }
 
 //--------------------------------------------------------------------------------------------------
 
 ErrorCode command_mode_t::execute( )
 {
-    m_event_handler.set_mode_bit( m_mode_bit, m_onOff );
+    m_event_handler.set_mode_bit( m_cmd.mode_bit, m_cmd.onOff );
     return ErrorCode::OK;
 }
 
