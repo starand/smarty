@@ -12,6 +12,7 @@
 
 class config_t;
 class deivce_t;
+class device_t;
 struct device_state_t;
 class event_parser_t;
 class light_object_t;

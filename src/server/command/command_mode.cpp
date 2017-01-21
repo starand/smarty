@@ -18,7 +18,7 @@ command_mode_t::command_mode_t( uint mode_bit, bool onOff, event_handler_t& hand
 
 //--------------------------------------------------------------------------------------------------
 
-ErrorCode command_mode_t::execute( device_t& device )
+ErrorCode command_mode_t::execute( )
 {
     m_event_handler.set_mode_bit( m_mode_bit, m_onOff );
     return ErrorCode::OK;

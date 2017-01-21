@@ -11,7 +11,7 @@ public:
     command_mode_t( uint mode_bit, bool onOff, event_handler_t& event_handler, uint delay );
 
 public:
-    virtual ErrorCode execute( device_t& device );
+    virtual ErrorCode execute( );
 
 private:
     event_handler_t& m_event_handler;

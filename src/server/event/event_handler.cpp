@@ -132,11 +132,11 @@ void event_handler_t::set_mode_bit( uint bit, bool onOff )
     uint bitset = m_event_modes_bitset;
     if ( onOff )
     {
-        m_event_modes_bitset |= 1 << bit;
+        m_event_modes_bitset |= 1 << ( bit - 1 );
     }
     else
     {
-        m_event_modes_bitset &= ~( 1 << bit );
+        m_event_modes_bitset &= ~( 1 << ( bit - 1 ) );
     }
 
     if ( m_event_modes_bitset != bitset )
@@ -299,7 +299,7 @@ void event_handler_t::do_stop( )
     class fake_command : public smarty::command_t
     {
     public:
-        virtual ErrorCode execute( device_t& device ) { return ErrorCode::OK; }
+        virtual ErrorCode execute( ) { return ErrorCode::OK; }
     };
 
     command_ptr_t fake( new fake_command( ) );
@@ -320,7 +320,7 @@ command_ptr_t event_handler_t::create_device_command( const device_command_t& cm
 {
     uint idx = get_bit_offset( cmd.param );
     ASSERT( idx < m_lights.size( ) && "lights index should be less than m_lights size" );
-    auto res = std::make_shared< command_device_t >( cmd, timeout, m_lights[ idx ] );
+    auto res = std::make_shared< command_device_t >( cmd, timeout, m_lights[ idx ], m_device );
     LOG_DEBUG( "[cmd.%p] Device command [%u:%u] with params (timeout %u) created",
                res.get(), cmd.cmd, cmd.param, timeout );
 
@@ -350,7 +350,7 @@ bool event_handler_t::check_mode( const smarty::event_t& handler ) const
 void event_handler_t::process_command( )
 {
     auto command = m_cmd_queue.pop( );
-    ErrorCode code = command->execute( m_device );
+    ErrorCode code = command->execute( );
 
     if ( code != ErrorCode::OK )
     {
@@ -375,7 +375,7 @@ void event_handler_t::check_light_objects( )
         if ( timeout && timeout <= current )
         {
             device_command_t cmd{ EC_TURNOFF, static_cast<device_param_t>( 1 << idx ) };
-            add_command( std::make_shared< command_device_t >( cmd, 0, light ) );
+            add_command( create_device_command( cmd, 0 ) );
 
             light.clear_turnoff_time( );
         }
