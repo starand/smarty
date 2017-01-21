@@ -2,9 +2,9 @@
 
 #include <client/client_register.h>
 #include <common/client_protocol.h>
+#include <common/smarty_config.h>
 #include <mobile/mobile_register.h>
 
-#include <files/config.h>
 #include <net/xsocket.h>
 
 #include <json/writer.h>
@@ -13,7 +13,8 @@
 // mobile_register_t implementation
 //--------------------------------------------------------------------------------------------------
 
-mobile_register_t::mobile_register_t( smarty::client_register_t& clients, const config_t& config )
+mobile_register_t::mobile_register_t( smarty::client_register_t& clients,
+                                      const smarty_config_t& config )
     : m_clients( clients )
     , m_client_list( )
     , m_client_list_mutex( )

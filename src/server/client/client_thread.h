@@ -9,13 +9,8 @@ class socket_t;
 
 namespace smarty
 {
-    class client_handler_t;
-}
-
-
-namespace smarty
-{
     class client_handler_factory_t;
+    class client_handler_t;
 }
 
 

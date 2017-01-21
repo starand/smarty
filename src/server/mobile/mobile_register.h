@@ -7,7 +7,7 @@
 #include <client/client_info.h>
 
 
-class config_t;
+class smarty_config_t;
 struct desktop_command_request_t;
 struct mobile_notification_t;
 class socket_t;
@@ -21,7 +21,7 @@ namespace smarty
 class mobile_register_t : public client_heartbeat_t, public device_observer_t
 {
 public:
-    mobile_register_t( smarty::client_register_t& clients, const config_t& config );
+    mobile_register_t( smarty::client_register_t& clients, const smarty_config_t& config );
     ~mobile_register_t( );
 
 protected: // client_heartbeat_t
@@ -61,7 +61,7 @@ private:
 
     device_state_t m_prev_state;
 
-    const config_t& m_config;
+    const smarty_config_t& m_config;
 };
 
 #endif // __STATUS_UPDATER_H_INCLUDED

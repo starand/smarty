@@ -1,12 +1,12 @@
 #include <common/StdAfx.h>
 
+#include <client/client_register.h>
 #include <command/command_device.h>
 #include <device/device.h>
 #include <device/light_object.h>
 #include <event/event_handler.h>
 #include <mobile/mobile_handler.h>
 #include <mobile/mobile_register.h>
-#include <server/smarty_server.h>
 
 #include <common/smarty_config.h>
 #include <common/client_protocol.h>
@@ -24,9 +24,9 @@ extern const char g_szUnableToSendResponse[];
 //--------------------------------------------------------------------------------------------------
 
 mobile_handler_t::mobile_handler_t( socket_t& socket, const std::string& endpoint,
-                                    smarty_config_t& config, device_t& device,
+                                    const smarty_config_t& config, device_t& device,
                                     mobile_register_t& mobile_register,
-                                    smarty_server_t& smarty_server, packet_intf_t *hs_req,
+                                    smarty::client_register_t& clients, packet_intf_t *hs_req,
                                     event_handler_t& event_handler )
     : m_socket( socket )
     , m_end_point( endpoint )
@@ -34,7 +34,7 @@ mobile_handler_t::mobile_handler_t( socket_t& socket, const std::string& endpoin
     , m_config( config )
     , m_device( device )
     , m_mobile_register( mobile_register )
-    , m_smarty_server( smarty_server )
+    , m_clients( clients )
     , m_event_handler( event_handler )
 {
     mobile_handshake_request_t *request = dynamic_cast<mobile_handshake_request_t *>( hs_req );
@@ -151,7 +151,7 @@ void mobile_handler_t::process_client( )
             LOG_DEBUG( "[mobile] Desktop command request to %u, cmd: %s (%u), params: %s",
                        request.desktop_index, get_desktop_command_name( request.command ),
                        request.command, request.params.c_str( ) );
-            m_smarty_server.on_execute_desktop_command( request );
+            m_clients.on_execute_desktop_command( request );
         }
         RECV_PACKET_CASE( server_command_request_t, request )
         {

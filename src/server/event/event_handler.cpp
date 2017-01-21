@@ -3,6 +3,7 @@
 #include <client/client_register.h>
 #include <command/command_device.h>
 #include <command/command_mode.h>
+#include <common/smarty_config.h>
 #include <device/device.h>
 #include <device/light_object.h>
 #include <event/device_event.h>
@@ -12,7 +13,6 @@
 #include <event/mode_event.h>
 
 #include <common/driver_intf.h>
-#include <files/config.h>
 #include <utils/utils.h>
 
 #include <memory>
@@ -44,11 +44,10 @@ uint get_bit_offset( device_param_t param )
 
 //--------------------------------------------------------------------------------------------------
 
-event_handler_t::event_handler_t( const config_t& config, device_t& device,
-                                  smarty::client_register_t& clients )
+event_handler_t::event_handler_t( const smarty_config_t& config, device_t& device )
     : m_config( config )
     , m_device( device )
-    , m_clients( clients )
+    , m_clients( )
     , m_event_parser( new event_parser_t( *this ) )
     , m_device_state( device.get_device_state( ) )
     , m_last_dblclck_pin( INVALID_PIN )
@@ -88,6 +87,13 @@ bool event_handler_t::init( )
 
 //--------------------------------------------------------------------------------------------------
 
+void event_handler_t::set_client_register( std::shared_ptr< smarty::client_register_t > reg )
+{
+    m_clients = reg;
+}
+
+//--------------------------------------------------------------------------------------------------
+
 bool event_handler_t::init_light_objects( )
 {
     auto lights_node = m_config[ "lights" ];
@@ -122,7 +128,8 @@ void event_handler_t::update_modes( uint bitset )
         event_handler->on_event( );
     }
 
-    m_clients.on_update_modes_request( get_modes_bitset( ) );
+    ASSERT( m_clients.get( ) != nullptr );
+    m_clients->on_update_modes_request( get_modes_bitset( ) );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -142,7 +149,9 @@ void event_handler_t::set_mode_bit( uint bit, bool onOff )
     if ( m_event_modes_bitset != bitset )
     {
         LOG_TRACE( "[event.modes] update mode %u with value %s", bit, ( onOff ? "on" : "off" ) );
-        m_clients.on_update_modes_request( get_modes_bitset( ) );
+
+        ASSERT( m_clients.get( ) != nullptr );
+        m_clients->on_update_modes_request( get_modes_bitset( ) );
     }
 }
 

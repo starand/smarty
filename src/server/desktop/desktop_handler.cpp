@@ -1,8 +1,9 @@
 #include <common/StdAfx.h>
 
+#include <client/client_handler_factory.h>
+#include <client/client_register.h>
 #include <desktop/desktop_handler.h>
 #include <desktop/desktop_register.h>
-#include <server/smarty_server.h>
 
 #include <common/smarty_config.h>
 #include <common/client_protocol.h>
@@ -20,7 +21,8 @@ extern const char g_szUnableToSendResponse[];
 //--------------------------------------------------------------------------------------------------
 
 desktop_handler_t::desktop_handler_t( socket_t& socket, const std::string& endpoint,
-                                      smarty_config_t& config, desktop_register_t& desktop_register,
+                                      const smarty_config_t& config,
+                                      desktop_register_t& desktop_register,
                                       smarty::client_register_t& clients, packet_intf_t *hs_req )
     : m_client_name( )
     , m_end_point( endpoint )

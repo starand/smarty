@@ -10,12 +10,12 @@
 #include <memory>
 
 
-class config_t;
 class deivce_t;
 class device_t;
 struct device_state_t;
 class event_parser_t;
 class light_object_t;
+class smarty_config_t;
 
 namespace smarty
 {
@@ -36,11 +36,13 @@ class event_handler_t
     , public smarty::command_handler_t
 {
 public:
-    event_handler_t( const config_t& config, device_t& device, smarty::client_register_t& clients );
+    event_handler_t( const smarty_config_t& config, device_t& device );
     ~event_handler_t( );
 
 public:
     bool init( );
+
+    void set_client_register( std::shared_ptr< smarty::client_register_t > reg );
 
     void update_modes( uint bitset );
     void set_mode_bit( uint bit, bool onOff );
@@ -75,9 +77,9 @@ private:
     void check_light_objects( );
 
 private:
-    const config_t& m_config;
+    const smarty_config_t& m_config;
     device_t& m_device;
-    smarty::client_register_t& m_clients;
+    std::shared_ptr< smarty::client_register_t > m_clients;
 
     std::unique_ptr< event_parser_t > m_event_parser;
 
