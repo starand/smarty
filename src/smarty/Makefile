@@ -16,7 +16,7 @@ SRC = \
 	$(SRC_DIR)/server_module.cpp \
 	$(SRC_DIR)/webserver_module.cpp \
 	$(COMMON_DIR)/library_intf.cpp \
-	$(COMMON_DIR)/smarty_config.cpp \
+	$(COMMON_DIR)/config.cpp \
 	$(FW_DIR)/common/logger.cpp \
 	$(FW_DIR)/utils/utils.cpp \
 	$(FW_DIR)/utils/strutils.cpp \

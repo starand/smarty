@@ -19,7 +19,7 @@
 // net_server_t implementation
 //--------------------------------------------------------------------------------------------------
 
-net_server_t::net_server_t( const smarty_config_t& config, device_t& device,
+net_server_t::net_server_t( const config_t& config, device_t& device,
                             event_handler_t& handler )
     : m_config( config )
     , m_device( device )

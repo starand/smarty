@@ -40,7 +40,7 @@ const char g_aszIndexContent[] = {
 
 webclient_handler_t::webclient_handler_t( clients_queue_t& clients_queue,
                                           request_executor_t& request_executor,
-                                          smarty_config_t& config )
+                                          config_t& config )
     : m_clients_queue( clients_queue )
     , m_buffer( NULL )
     , m_buffer_size( MAX_BUFFER_SIZE )

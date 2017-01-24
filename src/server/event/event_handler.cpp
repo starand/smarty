@@ -3,7 +3,7 @@
 #include <client/client_register.h>
 #include <command/command_device.h>
 #include <command/command_mode.h>
-#include <common/smarty_config.h>
+#include <common/config.h>
 #include <device/device.h>
 #include <device/light_object.h>
 #include <event/device_event.h>
@@ -44,7 +44,7 @@ uint get_bit_offset( device_param_t param )
 
 //--------------------------------------------------------------------------------------------------
 
-event_handler_t::event_handler_t( const smarty_config_t& config, device_t& device )
+event_handler_t::event_handler_t( const config_t& config, device_t& device )
     : m_config( config )
     , m_device( device )
     , m_clients( )

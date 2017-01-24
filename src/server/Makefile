@@ -26,7 +26,7 @@ SRC = \
 	$(SRC_DIR)/mobile/mobile_register.cpp \
 	$(SRC_DIR)/server/net_server.cpp \
 	$(SRC_DIR)/server/smarty_server.cpp \
-	$(COMMON_DIR)/smarty_config.cpp \
+	$(COMMON_DIR)/config.cpp \
 	$(COMMON_DIR)/enums.cpp \
 	$(FW_DIR)/utils/threading/threading.cpp \
 	$(FW_DIR)/utils/threading/threading_linux.cpp \

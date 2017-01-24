@@ -5,7 +5,7 @@
 #include "server_module.h"
 #include "webserver_module.h"
 
-#include <common/smarty_config.h>
+#include <common/config.h>
 
 #include <fileutils.h>
 #include <utils.h>
@@ -28,7 +28,7 @@ smarty_app_t::smarty_app_t( )
     , m_server( )
     , m_webserver( )
     , m_binary_dir( )
-    , m_config( new smarty_config_t( ) )
+    , m_config( new config_t( ) )
     , m_logger( )
 {
     ASSERT( m_config.get( ) != nullptr );
@@ -93,7 +93,7 @@ bool smarty_app_t::get_config_filenames( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_app_t::load_smarty_config( )
+bool smarty_app_t::load_config( )
 {
     string config_file = m_binary_dir + g_szSmartyConfigDef;
     if ( !m_config->read_config( config_file ) )
@@ -108,7 +108,7 @@ bool smarty_app_t::load_smarty_config( )
 
 bool smarty_app_t::load_configs( )
 {
-    return get_config_filenames( ) && load_smarty_config( );
+    return get_config_filenames( ) && load_config( );
 }
 
 //--------------------------------------------------------------------------------------------------

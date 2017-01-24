@@ -10,11 +10,11 @@
 
 class client_handler_intf_t;
 class client_thread_t;
+class config_t;
 class desktop_register_t;
 class device_t;
 class event_handler_t;
 class mobile_register_t;
-class smarty_config_t;
 class socket_t;
 struct desktop_command_request_t;
 struct mobile_notification_t;
@@ -30,7 +30,7 @@ class net_server_t
     , public smarty::client_handler_factory_t
 {
 public:
-    net_server_t( const smarty_config_t& config, device_t& device, event_handler_t& handler );
+    net_server_t( const config_t& config, device_t& device, event_handler_t& handler );
     ~net_server_t();
 
 public: // thread_base_t
@@ -66,7 +66,7 @@ private:
     void clean_clients_queue( );
 
 private:
-    const smarty_config_t& m_config;
+    const config_t& m_config;
     device_t& m_device;
     event_handler_t& m_event_handler;
 

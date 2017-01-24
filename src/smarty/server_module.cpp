@@ -29,7 +29,7 @@ server_module_t::~server_module_t( )
 
 /*virtual */
 ErrorCode server_module_t::start( std::shared_ptr< driver_intf_t > driver,
-                           std::shared_ptr< smarty_config_t > config )
+                                  std::shared_ptr< config_t > config )
 {
     if ( !is_loaded( ) )
     {

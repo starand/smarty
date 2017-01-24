@@ -26,7 +26,7 @@ web_server_t::~web_server_t( )
 //--------------------------------------------------------------------------------------------------
 
 void web_server_t::create_internal_objects( std::shared_ptr< driver_intf_t > driver,
-                                            std::shared_ptr< smarty_config_t > config )
+                                            std::shared_ptr< config_t > config )
 {
     ASSERT( m_socket == NULL );
     m_socket = new socket_t( );
@@ -47,7 +47,7 @@ void web_server_t::destroy_internal_objects( )
 
 /*virtual */
 ErrorCode web_server_t::start( std::shared_ptr< driver_intf_t > driver,
-                               std::shared_ptr< smarty_config_t > config )
+                               std::shared_ptr< config_t > config )
 {
     create_internal_objects( driver, config );
     ASSERT( m_thread_pool != NULL ); ASSERT( m_socket != NULL );

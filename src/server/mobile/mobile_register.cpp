@@ -2,7 +2,7 @@
 
 #include <client/client_register.h>
 #include <common/client_protocol.h>
-#include <common/smarty_config.h>
+#include <common/config.h>
 #include <mobile/mobile_register.h>
 
 #include <net/xsocket.h>
@@ -14,7 +14,7 @@
 //--------------------------------------------------------------------------------------------------
 
 mobile_register_t::mobile_register_t( smarty::client_register_t& clients,
-                                      const smarty_config_t& config )
+                                      const config_t& config )
     : m_clients( clients )
     , m_client_list( )
     , m_client_list_mutex( )

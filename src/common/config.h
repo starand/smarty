@@ -1,15 +1,14 @@
-#ifndef __SMARTY_CONFIG_T_H_INCLUDED
-#define __SMARTY_CONFIG_T_H_INCLUDED
+#pragma once
 
 #include <files/config.h>
 #include <map>
 
 
-class smarty_config_t : public config_t
+class config_t : public FileUtils::config_t
 {
 public:
-    smarty_config_t( );
-    ~smarty_config_t( ) = default;
+    config_t( );
+    ~config_t( ) = default;
 
     bool do_parse( );
 
@@ -34,6 +33,3 @@ private:
     pin_config_t m_light_pins_map;
     pin_config_t m_sensor_pins_map;
 };
-
-#endif // __SMARTY_CONFIG_T_H_INCLUDED
-

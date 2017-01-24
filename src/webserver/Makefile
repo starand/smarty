@@ -15,7 +15,7 @@ SRC = $(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/request_parser.cpp \
 	$(SRC_DIR)/html_builder.cpp \
 	$(SRC_DIR)/request_executor.cpp \
-	$(COMMON_DIR)/smarty_config.cpp \
+	$(COMMON_DIR)/config.cpp \
 	$(FW_DIR)/utils/threading/threading.cpp \
 	$(FW_DIR)/utils/threading/threading_linux.cpp \
 	$(FW_DIR)/utils/net/xsocket.cpp \

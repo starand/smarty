@@ -1,7 +1,7 @@
 #include <common/StdAfx.h>
 #include "html_builder.h"
 
-#include <common/smarty_config.h>
+#include <common/config.h>
 #include <common/driver_intf.h>
 #include <common/enums.h>
 
@@ -47,7 +47,7 @@ static const char g_szHandlersEnd[] =
 
 //--------------------------------------------------------------------------------------------------
 
-html_builder_t::html_builder_t( smarty_config_t& config )
+html_builder_t::html_builder_t( config_t& config )
     : m_config( config )
 {
 }

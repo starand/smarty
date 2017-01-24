@@ -3,7 +3,7 @@
 #include <command/command_device.h>
 #include <device/device.h>
 
-#include <common/smarty_config.h>
+#include <common/config.h>
 #include <common/config_options.h>
 #include <common/driver_intf.h>
 #include <common/enums.h>
@@ -17,7 +17,7 @@
 // device_t implementation
 //--------------------------------------------------------------------------------------------------
 
-device_t::device_t( driver_intf_t& driver, smarty_config_t& config )
+device_t::device_t( driver_intf_t& driver, config_t& config )
     : m_driver( driver )
     , m_config( config )
     , m_device_state( )

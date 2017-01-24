@@ -8,14 +8,14 @@
 class clients_queue_t;
 class webclient_handler_t;
 class driver_intf_t;
-class smarty_config_t;
+class config_t;
 class request_executor_t;
 
 class thread_pool_t
 {
 public:
     thread_pool_t( clients_queue_t& clients_queue, std::shared_ptr< driver_intf_t > driver,
-                   std::shared_ptr< smarty_config_t > config );
+                   std::shared_ptr< config_t > config );
     ~thread_pool_t( );
 
 private:
@@ -36,7 +36,7 @@ private:
     handlers_collection_t m_threads;
 
     std::shared_ptr< driver_intf_t > m_driver;
-    std::shared_ptr< smarty_config_t > m_config;
+    std::shared_ptr< config_t > m_config;
 
     request_executor_t *m_request_executor;
 };

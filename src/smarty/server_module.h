@@ -15,7 +15,7 @@ public:
 
 public: // server_intf_t
     virtual ErrorCode start( std::shared_ptr< driver_intf_t > driver,
-                             std::shared_ptr< smarty_config_t > config );
+                             std::shared_ptr< config_t > config );
     virtual ErrorCode stop( );
 
 public:

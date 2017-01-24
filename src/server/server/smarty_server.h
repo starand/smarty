@@ -5,11 +5,11 @@
 #include <memory>
 
 
+class config_t;
 class driver_intf_t;
 class device_t;
 class event_handler_t;
 class net_server_t;
-class smarty_config_t;
 
 class smarty_server_t : public server_intf_t
 {
@@ -29,11 +29,11 @@ private:
 
 public: // server_intf_t implementation
     virtual ErrorCode start( std::shared_ptr< driver_intf_t > driver,
-                             std::shared_ptr< smarty_config_t > config );
+                             std::shared_ptr< config_t > config );
     virtual ErrorCode stop( );
 
 private:
-    std::shared_ptr< smarty_config_t > m_config;
+    std::shared_ptr< config_t > m_config;
 
     std::unique_ptr< device_t > m_device;
 

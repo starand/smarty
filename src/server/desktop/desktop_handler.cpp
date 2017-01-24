@@ -5,8 +5,8 @@
 #include <desktop/desktop_handler.h>
 #include <desktop/desktop_register.h>
 
-#include <common/smarty_config.h>
 #include <common/client_protocol.h>
+#include <common/config.h>
 #include <common/config_options.h>
 
 #include <logger.h>
@@ -21,7 +21,7 @@ extern const char g_szUnableToSendResponse[];
 //--------------------------------------------------------------------------------------------------
 
 desktop_handler_t::desktop_handler_t( socket_t& socket, const std::string& endpoint,
-                                      const smarty_config_t& config,
+                                      const config_t& config,
                                       desktop_register_t& desktop_register,
                                       smarty::client_register_t& clients, packet_intf_t *hs_req )
     : m_client_name( )

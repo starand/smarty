@@ -5,7 +5,7 @@
 #include <event/event_handler.h>
 #include <server/net_server.h>
 #include <server/smarty_server.h>
-#include <common/smarty_config.h>
+#include <common/config.h>
 
 //#include <files/config.h>
 //#include <fileutils.h>
@@ -135,7 +135,7 @@ void smarty_server_t::stop_net_server( )
 
 /*virtual */
 ErrorCode smarty_server_t::start( std::shared_ptr< driver_intf_t > driver,
-                                  std::shared_ptr< smarty_config_t > config )
+                                  std::shared_ptr< config_t > config )
 {
     m_config = config;
 

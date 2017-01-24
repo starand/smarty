@@ -2,13 +2,13 @@
 #define __HTML_BUILDER_H_INCLUDED
 
 
-class smarty_config_t;
+class config_t;
 struct device_state_t;
 
 class html_builder_t
 {
 public:
-    html_builder_t( smarty_config_t& config );
+    html_builder_t( config_t& config );
     ~html_builder_t( );
 
 public:
@@ -19,7 +19,7 @@ public:
     void build_jquery_headers( size_t len, std::string& headers );
 
 private:
-    smarty_config_t& m_config;
+    config_t& m_config;
 };
 
 #endif // __HTML_BUILDER_H_INCLUDED

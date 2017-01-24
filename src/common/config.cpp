@@ -1,5 +1,5 @@
 #include <common/StdAfx.h>
-#include "smarty_config.h"
+#include <common/config.h>
 
 #include "config_options.h"
 
@@ -8,7 +8,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-smarty_config_t::smarty_config_t( )
+config_t::config_t( )
     : m_light_pins_map( )
     , m_sensor_pins_map( )
 {
@@ -16,7 +16,7 @@ smarty_config_t::smarty_config_t( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_config_t::do_parse( )
+bool config_t::do_parse( )
 {
     ASSERT( !m_json->isNull( ) );
 
@@ -35,7 +35,7 @@ bool smarty_config_t::do_parse( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_config_t::parse_lights( )
+bool config_t::parse_lights( )
 {
     Json::Value _lights = ( *m_json )[ "lights" ];
     if ( !_lights.isArray( ) )
@@ -64,7 +64,7 @@ bool smarty_config_t::parse_lights( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_config_t::parse_sensors( )
+bool config_t::parse_sensors( )
 {
     Json::Value _sensors = ( *m_json )[ "sensors" ];
     if ( _sensors.isNull( ) || !_sensors.isArray( ) )
@@ -93,7 +93,7 @@ bool smarty_config_t::parse_sensors( )
 
 //--------------------------------------------------------------------------------------------------
 
-uint smarty_config_t::get_light_pin( const string& name ) const
+uint config_t::get_light_pin( const string& name ) const
 {
     pin_config_t::const_iterator iter = m_light_pins_map.begin( );
     for ( ; iter != m_light_pins_map.end( ); ++iter )
@@ -109,7 +109,7 @@ uint smarty_config_t::get_light_pin( const string& name ) const
 
 //--------------------------------------------------------------------------------------------------
 
-string smarty_config_t::get_light_name( uint pin ) const
+string config_t::get_light_name( uint pin ) const
 {
     pin_config_t::const_iterator iter = m_light_pins_map.find( pin );
     return iter == m_light_pins_map.end( ) ? "UNKNOWN" : iter->second;
@@ -117,7 +117,7 @@ string smarty_config_t::get_light_name( uint pin ) const
 
 //--------------------------------------------------------------------------------------------------
 
-string smarty_config_t::get_light_names( uchar pins ) const
+string config_t::get_light_names( uchar pins ) const
 {
     string result;
 
@@ -139,7 +139,7 @@ string smarty_config_t::get_light_names( uchar pins ) const
 
 //--------------------------------------------------------------------------------------------------
 
-string smarty_config_t::get_sensor_name( uint pin ) const
+string config_t::get_sensor_name( uint pin ) const
 {
     pin_config_t::const_iterator iter = m_sensor_pins_map.find( pin );
     return iter == m_sensor_pins_map.end( ) ? "UNKNOWN" : iter->second;
@@ -147,7 +147,7 @@ string smarty_config_t::get_sensor_name( uint pin ) const
 
 //--------------------------------------------------------------------------------------------------
 
-string smarty_config_t::get_sensor_names( uchar pins ) const
+string config_t::get_sensor_names( uchar pins ) const
 {
     string result;
 
@@ -169,7 +169,7 @@ string smarty_config_t::get_sensor_names( uchar pins ) const
 
 //--------------------------------------------------------------------------------------------------
 
-const Json::Value& smarty_config_t::operator[]( const std::string& name ) const
+const Json::Value& config_t::operator[]( const std::string& name ) const
 {
     return ( *m_json )[ name ];
 }

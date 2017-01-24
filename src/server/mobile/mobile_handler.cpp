@@ -8,7 +8,7 @@
 #include <mobile/mobile_handler.h>
 #include <mobile/mobile_register.h>
 
-#include <common/smarty_config.h>
+#include <common/config.h>
 #include <common/client_protocol.h>
 #include <common/config_options.h>
 #include <common/constants.h>
@@ -24,7 +24,7 @@ extern const char g_szUnableToSendResponse[];
 //--------------------------------------------------------------------------------------------------
 
 mobile_handler_t::mobile_handler_t( socket_t& socket, const std::string& endpoint,
-                                    const smarty_config_t& config, device_t& device,
+                                    const config_t& config, device_t& device,
                                     mobile_register_t& mobile_register,
                                     smarty::client_register_t& clients, packet_intf_t *hs_req,
                                     event_handler_t& event_handler )

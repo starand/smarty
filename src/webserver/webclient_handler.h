@@ -5,18 +5,18 @@
 
 
 class clients_queue_t;
+class config_t;
 class socket_t;
 class request_parser_t;
 class request_executor_t;
 class html_builder_t;
-class smarty_config_t;
 
 
 class webclient_handler_t : public thread_base_t
 {
 public:
     webclient_handler_t( clients_queue_t& clients_queue, request_executor_t& request_executor,
-                         smarty_config_t& config );
+                         config_t& config );
     ~webclient_handler_t( );
 
 private:
@@ -50,7 +50,7 @@ private:
     request_parser_t *m_request_parser;
     request_executor_t& m_request_executor;
     html_builder_t *m_html_builder;
-    smarty_config_t& m_config;
+    config_t& m_config;
 
 private: // current client info
     socket_t *m_socket;

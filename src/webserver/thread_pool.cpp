@@ -15,7 +15,7 @@
 
 thread_pool_t::thread_pool_t( clients_queue_t& clients_queue,
                               std::shared_ptr< driver_intf_t > driver,
-                              std::shared_ptr< smarty_config_t > config )
+                              std::shared_ptr< config_t > config )
     : m_clients_queue( clients_queue )
     , m_pool_size( 0 )
     , m_threads( )

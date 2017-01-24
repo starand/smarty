@@ -9,15 +9,15 @@
 #include <set>
 
 
+class config_t;
 class driver_intf_t;
 class event_t;
-class smarty_config_t;
 
 
 class device_t : public thread_base_t, public device_observer_t
 {
 public:
-    device_t( driver_intf_t& driver, smarty_config_t& config );
+    device_t( driver_intf_t& driver, config_t& config );
     ~device_t( );
 
 public:
@@ -53,7 +53,7 @@ private:
 
 private:
     driver_intf_t& m_driver;
-    smarty_config_t& m_config;
+    config_t& m_config;
 
     device_state_t m_device_state;
     device_state_t m_prev_device_state;

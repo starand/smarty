@@ -3,10 +3,10 @@
 #include <memory>
 
 
+class config_t;
 class driver_module_t;
 class server_module_t;
 class webserver_module_t;
-class smarty_config_t;
 class logger_initializer_t;
 
 class smarty_app_t
@@ -22,7 +22,7 @@ private:
     void do_run( );
 
     bool get_config_filenames( );
-    bool load_smarty_config( );
+    bool load_config( );
     bool load_configs( );
 
     bool load_driver( );
@@ -47,7 +47,7 @@ private:
 
     std::string m_binary_dir;
 
-    std::shared_ptr< smarty_config_t > m_config;
+    std::shared_ptr< config_t > m_config;
     std::unique_ptr< logger_initializer_t > m_logger;
 
 public:
