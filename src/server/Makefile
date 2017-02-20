@@ -34,6 +34,7 @@ SRC = \
 	$(FW_DIR)/utils/files/fileutils.cpp \
 	$(FW_DIR)/utils/files/ConfigFile.cpp \
 	$(FW_DIR)/utils/files/config.cpp \
+	$(FW_DIR)/utils/files/ini_parser.cpp \
 	$(FW_DIR)/utils/utils.cpp \
 	$(FW_DIR)/utils/strutils.cpp \
 	$(FW_DIR)/common/logger.cpp \
@@ -42,7 +43,7 @@ SRC = \
 	$(THIRDPARTY_DIR)/json/json_value.cpp
 
 
-DEPS = $(FW_DIR)/common/asserts.h
+DEPS =
 
 OBJS = $(subst .cpp,.o, $(SRC))
 
@@ -61,7 +62,7 @@ CXX=g++
 CXXFLAGS = $(INCLUDES) \
 	-Wall -c -g -fPIC -std=c++11
 
-LFLAGS =  -lpthread -lrt -Wall -shared
+LFLAGS =  -lpthread -Wall -shared
 
 
 $(TARGET): $(OBJS)

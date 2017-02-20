@@ -177,7 +177,7 @@ bool smarty_app_t::load_webserver( )
 
 bool smarty_app_t::load_plugins( )
 {
-    return load_driver( ) && load_server( ) && load_webserver( );
+    return load_driver( ) && load_server( );// && load_webserver( );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ void smarty_app_t::unload_webserver( )
 
 void smarty_app_t::unload_plugins( )
 {
-    unload_webserver( );
+    //unload_webserver( );
     unload_server( );
     unload_driver( );
 }

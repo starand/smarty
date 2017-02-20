@@ -10,7 +10,7 @@ public:
     config_t( );
     ~config_t( ) = default;
 
-    bool do_parse( );
+    bool do_parse( ) override;
 
 public:
     uint get_light_pin( const string& name ) const;
@@ -20,7 +20,7 @@ public:
     string get_sensor_name( uint pin ) const;
     string get_sensor_names( uchar pins ) const;
 
-    const Json::Value& operator[]( const std::string& name ) const;
+    const Json::Value& operator[]( const std::string& name ) const override;
 
 private:
     bool parse_lights( );

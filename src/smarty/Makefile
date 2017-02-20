@@ -49,7 +49,7 @@ CXX=g++
 CXXFLAGS = $(INCLUDES) -c -g -fPIC -std=gnu++0x
 
 
-LFLAGS = -ldl -lpthread -lrt
+LFLAGS = -ldl -lpthread
 
 
 $(TARGET): $(OBJS)

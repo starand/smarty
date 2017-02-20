@@ -5,10 +5,9 @@
 #include <event/event_parser.h>
 #include <event/device_event.h>
 
+#include <common/config.h>
 #include <common/driver_intf.h>
 #include <common/enums.h>
-
-#include <files/config.h>
 
 
 #define INVALID_PIN (uint)-1
