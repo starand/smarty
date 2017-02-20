@@ -1,6 +1,6 @@
 MAKE_FLAGS = --no-print-directory -C
 
-build : server webserver smarty
+build : server smarty
 	-@ echo MC compiling ..
 	-@$(MAKE) $(MAKE_FLAGS) src/mc/|| echo BUILD FAILED
 	
@@ -24,10 +24,6 @@ driver :
 server :
 	@ echo server compiling ..
 	-@$(MAKE) $(MAKE_FLAGS) src/server/ || echo BUILD FAILED
-	
-webserver :
-	@ echo web server compiling ..
-	-@$(MAKE) $(MAKE_FLAGS) src/webserver/ || echo BUILD FAILED
 
 client :
 	@ echo client compiling..

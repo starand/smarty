@@ -14,7 +14,6 @@ SRC = \
 	$(SRC_DIR)/smarty_app.cpp \
 	$(SRC_DIR)/driver_module.cpp \
 	$(SRC_DIR)/server_module.cpp \
-	$(SRC_DIR)/webserver_module.cpp \
 	$(COMMON_DIR)/library_intf.cpp \
 	$(COMMON_DIR)/config.cpp \
 	$(FW_DIR)/common/logger.cpp \

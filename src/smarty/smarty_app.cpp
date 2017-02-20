@@ -3,7 +3,6 @@
 
 #include "driver_module.h"
 #include "server_module.h"
-#include "webserver_module.h"
 
 #include <common/config.h>
 
@@ -26,7 +25,6 @@ volatile bool smarty_app_t::m_stopping = false;
 smarty_app_t::smarty_app_t( )
     : m_driver( )
     , m_server( )
-    , m_webserver( )
     , m_binary_dir( )
     , m_config( new config_t( ) )
     , m_logger( )
@@ -152,32 +150,9 @@ bool smarty_app_t::load_server( )
 
 //--------------------------------------------------------------------------------------------------
 
-bool smarty_app_t::load_webserver( )
-{
-    m_webserver.reset( new webserver_module_t( ) );
-
-    ErrorCode error_code = m_webserver->load( );
-    if ( error_code != ErrorCode::OK )
-    {
-        LOG_FATAL( "Unable to start webserver. Error code: %u", error_code );
-        return false;
-    }
-
-    error_code = m_webserver->start( m_driver, m_config );
-    if ( error_code != ErrorCode::OK )
-    {
-        LOG_FATAL( "Unable to start webserver. Error code: %u", error_code );
-        return false;
-    }
-
-    return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-
 bool smarty_app_t::load_plugins( )
 {
-    return load_driver( ) && load_server( );// && load_webserver( );
+    return load_driver( ) && load_server( );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -199,18 +174,8 @@ void smarty_app_t::unload_server( )
 
 //--------------------------------------------------------------------------------------------------
 
-void smarty_app_t::unload_webserver( )
-{
-    m_webserver->stop( );
-    m_webserver->unload( );
-    m_webserver.reset( );
-}
-
-//--------------------------------------------------------------------------------------------------
-
 void smarty_app_t::unload_plugins( )
 {
-    //unload_webserver( );
     unload_server( );
     unload_driver( );
 }

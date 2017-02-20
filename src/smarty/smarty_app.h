@@ -6,7 +6,6 @@
 class config_t;
 class driver_module_t;
 class server_module_t;
-class webserver_module_t;
 class logger_initializer_t;
 
 class smarty_app_t
@@ -27,12 +26,10 @@ private:
 
     bool load_driver( );
     bool load_server( );
-    bool load_webserver( );
     bool load_plugins( );
 
     void unload_driver( );
     void unload_server( );
-    void unload_webserver( );
     void unload_plugins( );
 
 #ifdef LINUX
@@ -43,7 +40,6 @@ public:
 private:
     std::shared_ptr< driver_module_t> m_driver;
     std::unique_ptr< server_module_t > m_server;
-    std::unique_ptr< webserver_module_t > m_webserver;
 
     std::string m_binary_dir;
 
