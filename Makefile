@@ -29,11 +29,6 @@ client :
 	@ echo client compiling..
 	-@$(MAKE) $(MAKE_FLAGS) src/libclient/ || echo BUILD FAILED
 
-
-kclient: client
-	@ echo kclient compiling ..
-	-@$(MAKE) $(MAKE_FLAGS) src/kclient/ || echo BUILD FAILED
-
 desktop:
 	@ echo desktop compiling ..
 	@ echo "%VS110COMNTOOLS%\\vsvars32.bat"
