@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>stylesheet.qss</file>
-        <file>android/res/drawable/icon.png</file>
-        <file>android/res/drawable/lock.png</file>
-        <file>android/res/drawable/displayoff.png</file>
-        <file>android/res/drawable/soundoff.png</file>
-    </qresource>
-</RCC>
