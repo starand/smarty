@@ -16,7 +16,7 @@
 
 //--------------------------------------------------------------------------------------------------
 
-static char g_szRequestBuffer[ COMMAND_LENGTH ] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF };
+static char g_szRequestBuffer[ COMMAND_LENGTH ] = { 0x00, 0x00, 0x00, 0x00, 0x00, (char)0xFF };
 static char g_szResponseBuffer[ COMMAND_LENGTH ] = { 0 };
 
 #define REQ_CMD			0

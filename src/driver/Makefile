@@ -14,9 +14,12 @@ SRC = $(SRC_DIR)/main.cpp \
 	$(RASPI_DIR)/bcm2835.cpp \
 	$(RASPI_DIR)/spi.cpp \
 	$(FW_DIR)/utils/utils.cpp \
+	$(FW_DIR)/utils/strutils.cpp \
 	$(FW_DIR)/utils/threading/threading.cpp \
 	$(FW_DIR)/utils/threading/threading_linux.cpp \
 	$(FW_DIR)/utils/net/xsocket.cpp \
+	$(FW_DIR)/utils/files/fileutils.cpp \
+	$(FW_DIR)/utils/files/ini_parser.cpp \
 	$(FW_DIR)/common/logger.cpp
 
 DEPS = $(FW_DIR)/common/asserts.h
@@ -39,7 +42,7 @@ CXX=g++
 CXXFLAGS = $(INCLUDES) \
 	-Wall -fPIC -c -g -std=c++11
 
-LFLAGS = -shared -lpthread -lrt
+LFLAGS = -shared -lpthread
 
 
 $(TARGET): $(OBJS)
