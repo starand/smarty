@@ -1,7 +1,6 @@
 #include <common/StdAfx.h>
 
-#include "device_controller.h"
-#include "driver.h"
+#include <driver/device_controller.h>
 
 #include <common/enums.h>
 
@@ -14,26 +13,20 @@
 
 //--------------------------------------------------------------------------------------------------
 
-device_controller_t::device_controller_t( )
-    : m_device( NULL )
+device_controller_t::device_controller_t( driver_t& device )
+    : m_device( device )
     , m_device_lock( )
     , m_observers_list( )
     , m_device_state( )
     , m_light_times( MAX_LIGHT_COUNT )
     , m_wait_timeout( false, false )
 {
-    ASSERT( m_device == NULL );
-
-    m_device = new driver_t( );
 }
 
 //--------------------------------------------------------------------------------------------------
 
 device_controller_t::~device_controller_t( )
 {
-    ASSERT( m_device != NULL );
-
-    FREE_POINTER( m_device );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -110,9 +103,7 @@ void device_controller_t::do_stop( )
 
 void device_controller_t::do_execute_command( const device_command_t& command )
 {
-    ASSERT( m_device != NULL );
     device_state_t state;
-
     device_command_t cmd = { command.cmd, command.param };
 
     mutex_locker_t lock( m_device_lock );
@@ -120,11 +111,11 @@ void device_controller_t::do_execute_command( const device_command_t& command )
     if ( cmd.param == 0xFF )
     {
         cmd.param = 0x0F;
-        m_device->execute_command( cmd, state );
+        m_device.execute_command( cmd, state );
         cmd.param = 0xF0;
     }
 
-    if ( m_device->execute_command( cmd, state ) && m_device_state != state )
+    if ( m_device.execute_command( cmd, state ) && m_device_state != state )
     {
         if ( m_device_state.lights != state.lights )
         {

@@ -1,17 +1,17 @@
 #pragma once
 
 #include <common/driver_intf.h>
+#include <driver/driver.h>
 
 #include <threading.h>
+#include <memory>
 #include <set>
 
-
-class driver_t;
 
 class device_controller_t : public driver_intf_t, public thread_base_t
 {
 public:
-    device_controller_t( );
+    device_controller_t( driver_t& device );
     ~device_controller_t( );
 
 public: // driver_intf_t implementation
@@ -30,7 +30,7 @@ private:
     void update_light_times( uint bitset );
 
 private:
-    driver_t *m_device;
+    driver_t& m_device;
     mutex_t m_device_lock;
 
     std::set< device_observer_t* > m_observers_list;

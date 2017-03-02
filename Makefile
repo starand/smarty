@@ -1,6 +1,6 @@
 MAKE_FLAGS = --no-print-directory -C
 
-build : server smarty
+build : server driver smarty
 	-@ echo MC compiling ..
 	-@$(MAKE) $(MAKE_FLAGS) src/mc/|| echo BUILD FAILED
 	
@@ -10,7 +10,7 @@ run : build
 program :
 	-@$(MAKE) $(MAKE_FLAGS) src/mc/ program || exit 1
 	
-test :
+tests :
 	-@$(MAKE) $(MAKE_FLAGS) src/mc/ test || exit 1
 
 smarty :
@@ -35,6 +35,11 @@ desktop:
 	-@msbuild /P:Configuration=Debug projects\\smarty.sln /target:desktop /nologo /verbosity:m /p:WarningLevel=0
 	@ echo "  [$@]"
 	
+unittest:
+	-@$(MAKE) $(MAKE_FLAGS) tests/driver/ || echo BUILD FAILED
+
+test: unittest
+	-@./bin/unittest
 
 clean :
 	-@$(MAKE) $(MAKE_FLAGS) src/mc/ clean || exit 1

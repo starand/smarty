@@ -1,32 +1,35 @@
 #pragma once
 
-#include <common/driver_intf.h>
+#include <common/types.h>
 
+typedef uchar device_cmd_t;
+typedef uchar device_param_t;
 
-class spi_t;
-class gpio_t;
-class mutex_t;
+struct device_command_t
+{
+    device_cmd_t cmd;
+    device_param_t param;
+};
+
+typedef uchar lights_state_t;
+typedef uchar buttons_state_t;
+typedef uchar sensors_state_t;
+
+struct device_state_t
+{
+    lights_state_t lights;
+    buttons_state_t buttons;
+    sensors_state_t sensors;
+
+    bool operator!=( const device_state_t& rhs ) const
+    {
+        return lights != rhs.lights || buttons != rhs.buttons || sensors != rhs.sensors;
+    }
+};
+
 
 class driver_t
 {
 public:
-    driver_t( );
-    ~driver_t( );
-
-public:
-    bool execute_command( const device_command_t& command, device_state_t& state );
-
-private:
-    bool check_correctness( ) const;
-    void do_reset( );
-
-    void update_state( device_state_t& state ) const;
-
-    void dump_packet( char packet[] ) const;
-
-private:
-    spi_t *m_spi;
-    gpio_t *m_reset_gpio;
-
-    size_t m_reset_count;
+    virtual bool execute_command( const device_command_t& command, device_state_t& state ) = 0;
 };

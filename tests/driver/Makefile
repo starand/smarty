@@ -1,34 +1,34 @@
-TARGET = driver.so
+TARGET = unittest
 
 FW_DIR = ../../../cpp_fw
 RASPI_DIR = $(FW_DIR)/dev/raspberry
 
-SRC_DIR = .
-BIN_DIR = ../../bin
+THIRD_PARTY_DIR = ../../../3rdparty
+GTEST_DIR = $(THIRD_PARTY_DIR)/googletest/googletest
 
-SRC = $(SRC_DIR)/main.cpp \
-	$(SRC_DIR)/device_controller.cpp \
-	$(SRC_DIR)/device_driver.cpp \
-	$(RASPI_DIR)/gpio.cpp \
-	$(RASPI_DIR)/c_gpio.cpp \
-	$(RASPI_DIR)/bcm2835.cpp \
-	$(RASPI_DIR)/spi.cpp \
-	$(FW_DIR)/utils/utils.cpp \
-	$(FW_DIR)/utils/strutils.cpp \
+SRC_DIR = ../../src
+BIN_DIR = ../../bin
+LIB_DIR = ../libs
+
+SRC = main.cpp \
+	device_controller_test.cpp \
+	$(SRC_DIR)/driver/device_controller.cpp \
+	$(FW_DIR)/common/logger.cpp \
+	$(FW_DIR)/utils/net/xsocket.cpp \
 	$(FW_DIR)/utils/threading/threading.cpp \
 	$(FW_DIR)/utils/threading/threading_linux.cpp \
-	$(FW_DIR)/utils/net/xsocket.cpp \
 	$(FW_DIR)/utils/files/fileutils.cpp \
 	$(FW_DIR)/utils/files/ini_parser.cpp \
-	$(FW_DIR)/common/logger.cpp
+	$(FW_DIR)/utils/strutils.cpp \
+	$(FW_DIR)/utils/utils.cpp
 
 DEPS = $(FW_DIR)/common/asserts.h
 
 OBJS = $(subst .cpp,.o, $(SRC))
 
-INCLUDES = -I. \
-	-I.. \
-	-I../common \
+INCLUDES = -I.. \
+	-I$(GTEST_DIR)/include \
+	-I$(SRC_DIR) \
 	-I$(RASPI_DIR) \
 	-I$(RASPI_DIR)/.. \
 	-I$(FW_DIR) \
@@ -43,7 +43,7 @@ CXX=g++
 CXXFLAGS = $(INCLUDES) \
 	-Wall -fPIC -c -g -std=c++11
 
-LFLAGS = -shared -lpthread
+LFLAGS = -lpthread -L$(LIB_DIR) -lgtest
 
 
 $(TARGET): $(OBJS)

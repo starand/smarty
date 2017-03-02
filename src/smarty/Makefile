@@ -36,6 +36,7 @@ OBJS = $(subst .cpp,.o, $(SRC))
 
 INCLUDES = -I./ -I../common -I.. \
 	-I$(RASPI_DIR) -I$(RASPI_DIR)/.. \
+	-I$(FW_DIR) \
 	-I$(FW_DIR)/types \
 	-I$(FW_DIR)/common \
 	-I$(FW_DIR)/utils \

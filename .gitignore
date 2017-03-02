@@ -2,5 +2,6 @@
 bin/*.so
 bin/smarty
 bin/smarty.log
+bin/unittest
 *.o
 .vscode
