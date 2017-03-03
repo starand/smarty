@@ -7,6 +7,7 @@
 
 
 static device_controller_t *g_pController = NULL;
+static std::unique_ptr< device_driver_t > driver;
 
 //--------------------------------------------------------------------------------------------------
 
@@ -19,8 +20,8 @@ driver_intf_t *create_driver( )
 {
     ASSERT( g_pController == NULL );
 
-    std::unique_ptr< device_driver_t > driver( new device_driver_t( ) );
-    g_pController = new (nothrow)device_controller_t( *driver );
+    driver.reset( new device_driver_t( ) );
+    g_pController = new (nothrow)device_controller_t( *driver.get( ) );
 
     bool stated = g_pController->start( );
     ASSERT( stated == true );
