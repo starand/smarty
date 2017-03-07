@@ -1,6 +1,16 @@
 MAKE_FLAGS = --no-print-directory -C
 
-build : server driver smarty
+
+UNAME := $(shell uname)
+ifeq ($(UNAME),Darwin)
+	ALL_TARGETS := server driver smarty unittest
+else
+	ALL_TARGETS := server driver smarty mc
+endif
+
+build : $(ALL_TARGETS)
+
+mc :
 	-@ echo MC compiling ..
 	-@$(MAKE) $(MAKE_FLAGS) src/mc/|| echo BUILD FAILED
 	
@@ -22,20 +32,11 @@ driver :
 	-@$(MAKE) $(MAKE_FLAGS) src/driver/ || echo BUILD FAILED
     
 server :
-	@ echo server compiling ..
+	-@ echo server compiling ..
 	-@$(MAKE) $(MAKE_FLAGS) src/server/ || echo BUILD FAILED
-
-client :
-	@ echo client compiling..
-	-@$(MAKE) $(MAKE_FLAGS) src/libclient/ || echo BUILD FAILED
-
-desktop:
-	@ echo desktop compiling ..
-	@ echo "%VS110COMNTOOLS%\\vsvars32.bat"
-	-@msbuild /P:Configuration=Debug projects\\smarty.sln /target:desktop /nologo /verbosity:m /p:WarningLevel=0
-	@ echo "  [$@]"
 	
 unittest:
+	-@ echo unittest compiling ..
 	-@$(MAKE) $(MAKE_FLAGS) tests/driver/ || echo BUILD FAILED
 
 test: unittest
