@@ -37,7 +37,7 @@ server :
 	
 unittest:
 	-@ echo unittest compiling ..
-	-@$(MAKE) $(MAKE_FLAGS) tests/driver/ || echo BUILD FAILED
+	-@$(MAKE) $(MAKE_FLAGS) tests/ || echo BUILD FAILED
 
 test: unittest
 	-@./bin/unittest

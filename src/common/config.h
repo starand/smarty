@@ -1,5 +1,6 @@
 #pragma once
 
+#include <common/types.h>
 #include <files/config.h>
 #include <map>
 
