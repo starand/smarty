@@ -7,8 +7,8 @@
 
 double_click_event_t::double_click_event_t( uint pin, uint mode, const uint& last_dblclick,
                                             smarty::command_handler_t& command_handler )
-    : m_pin( pin )
-    , m_mode( mode )
+    : event_t( mode )
+    , m_pin( pin )
     , m_last_dblclicked( last_dblclick )
     , m_command_handler( command_handler )
 {
@@ -34,22 +34,6 @@ void double_click_event_t::on_event( )
     {
         m_command_handler.add_command( action );
     }
-}
-
-//--------------------------------------------------------------------------------------------------
-
-/*virtual */
-uint double_click_event_t::get_mode( ) const
-{
-    return m_mode;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-/*virtual */
-void double_click_event_t::set_actions( std::vector< command_ptr_t >& acts )
-{
-    m_actions.swap( acts );
 }
 
 //--------------------------------------------------------------------------------------------------

@@ -8,10 +8,10 @@
 device_event_t::device_event_t( DeviceEventType type, uint pin, TriggerState trigger_state,
                                 uint mode, smarty::command_handler_t& command_handler,
                                 const device_state_t& device_state )
-    : m_type( type )
+    : event_t( mode )
+    , m_type( type )
     , m_pin( pin )
     , m_trigger_state( trigger_state )
-    , m_mode( mode )
     , m_device_state( device_state )
     , m_prev_state( device_state )
     , m_command_handler( command_handler )
@@ -65,22 +65,6 @@ void device_event_t::on_event( )
     {
         m_command_handler.add_command( action );
     }
-}
-
-//--------------------------------------------------------------------------------------------------
-
-/*virtual */
-uint device_event_t::get_mode( ) const
-{
-    return m_mode;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-/*virtual */
-void device_event_t::set_actions( std::vector< command_ptr_t >& acts )
-{
-    m_actions.swap( acts );
 }
 
 //--------------------------------------------------------------------------------------------------

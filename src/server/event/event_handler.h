@@ -22,6 +22,7 @@ namespace smarty
     class client_register_t;
     class command_t;
     class event_t;
+    class timer_t;
 }
 
 
@@ -96,6 +97,8 @@ private:
 
     lock_queue_t< command_ptr_t > m_cmd_queue;
     std::vector< light_object_t > m_lights;
+
+    std::shared_ptr< smarty::timer_t > m_timer;
 };
 
 //--------------------------------------------------------------------------------------------------

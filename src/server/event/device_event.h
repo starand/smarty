@@ -28,19 +28,15 @@ public:
 
 public: // event_intf_t
     virtual void on_event( );
-    virtual uint get_mode( ) const;
-    virtual void set_actions( std::vector< command_ptr_t >& actions );
 
 protected:
     DeviceEventType m_type;
     uint m_pin;
     TriggerState m_trigger_state;
-    uint m_mode;
 
     const device_state_t& m_device_state;
     device_state_t m_prev_state;
 
-    std::vector< command_ptr_t > m_actions;
     smarty::command_handler_t& m_command_handler;
 };
 

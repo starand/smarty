@@ -47,7 +47,6 @@ clean :
 	-@$(MAKE) $(MAKE_FLAGS) src/smarty/ clean || exit 1
 	-@$(MAKE) $(MAKE_FLAGS) src/driver/ clean || exit 1
 	-@$(MAKE) $(MAKE_FLAGS) src/server/ clean || exit 1
-	-@$(MAKE) $(MAKE_FLAGS) src/libclient/ clean || exit 1
 
 rebuild : clean build
 	-@cp ./cfg/* ./bin/

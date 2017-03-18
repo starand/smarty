@@ -22,6 +22,8 @@ SRC = \
 	$(SRC_DIR)/event/event_parser.cpp \
 	$(SRC_DIR)/event/event_handler.cpp \
 	$(SRC_DIR)/event/mode_event.cpp \
+	$(SRC_DIR)/event/timer.cpp \
+	$(SRC_DIR)/event/timer_event.cpp \
 	$(SRC_DIR)/mobile/mobile_handler.cpp \
 	$(SRC_DIR)/mobile/mobile_register.cpp \
 	$(SRC_DIR)/server/net_server.cpp \

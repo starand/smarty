@@ -5,17 +5,17 @@
 
 //--------------------------------------------------------------------------------------------------
 
-mode_event_t::mode_event_t( uint mode_id, bool enabled,
+mode_event_t::mode_event_t( uint mode, bool enabled,
                             smarty::command_handler_t& command_handler,
                             const uint& modes_bitset )
-    : m_mode_id( mode_id )
+    : event_t( mode )
     , m_is_enabled( enabled )
     , m_modes_bitset( modes_bitset )
     , m_prev_bitset( modes_bitset )
     , m_command_handler( command_handler )
 {
     LOG_TRACE("[event.%p] created - type: mode, id: %u, fire_on: %u ",
-              this, m_mode_id, (uint)m_is_enabled );
+              this, mode, (uint)m_is_enabled );
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ mode_event_t::~mode_event_t( )
 /*virtual */
 void mode_event_t::on_event( )
 {
-    uint mode_bit = 1 << ( m_mode_id - 1);
+    uint mode_bit = 1 << ( m_mode - 1);
     bool fired = ( m_modes_bitset ^ m_prev_bitset ) & mode_bit;
     m_prev_bitset = m_modes_bitset;
 
@@ -50,22 +50,6 @@ void mode_event_t::on_event( )
     {
         m_command_handler.add_command( action );
     }
-}
-
-//--------------------------------------------------------------------------------------------------
-
-/*virtual */
-uint mode_event_t::get_mode( ) const
-{
-    return 0;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-/*virtual */
-void mode_event_t::set_actions( std::vector< command_ptr_t >& acts )
-{
-    m_actions.swap( acts );
 }
 
 //--------------------------------------------------------------------------------------------------

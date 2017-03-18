@@ -11,6 +11,7 @@
 #include <event/event_handler.h>
 #include <event/event_parser.h>
 #include <event/mode_event.h>
+#include <event/timer.h>
 
 #include <common/driver_intf.h>
 #include <utils/utils.h>
@@ -59,6 +60,7 @@ event_handler_t::event_handler_t( const config_t& config, device_t& device )
     , m_event_modes_bitset( 0 )
     , m_cmd_queue( )
     , m_lights( )
+    , m_timer( new smarty::timer_t( ) )
 {
 }
 
@@ -78,6 +80,11 @@ bool event_handler_t::init( )
     }
 
     if ( !m_event_parser->parse( m_config ) )
+    {
+        return false;
+    }
+
+    if ( !m_timer->start( ) )
     {
         return false;
     }
