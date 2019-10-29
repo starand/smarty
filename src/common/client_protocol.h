@@ -3,6 +3,8 @@
 
 #include <common/enums.h>
 
+#include <driver/driver.h>
+
 #include <platform.h>
 #include <asserts.h>
 #include <struct_serializer_ms.h>
@@ -226,11 +228,11 @@ struct light_notification_t : public packet_base_t < light_notification_t >
 {
     static const EPACKETMAGIC m_packet_magic = EPM_STATE_CHANGE_NOTIFICATION;
 
-    uchar lights_state;
+    lights_state_t lights_state;
 };
 
 STRUCT_SERIALIZER_BEGIN( light_notification_t )
-STRUCT_SERIALIZER_FIELD( uchar, lights_state )
+STRUCT_SERIALIZER_FIELD( lights_state_t, lights_state )
 STRUCT_SERIALIZER_END( )
 
 

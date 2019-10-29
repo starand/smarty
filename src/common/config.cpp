@@ -109,7 +109,7 @@ uint config_t::get_light_pin( const string& name ) const
 
 //--------------------------------------------------------------------------------------------------
 
-string config_t::get_light_name( uint pin ) const
+string config_t::get_light_name( lights_state_t pin ) const
 {
     pin_config_t::const_iterator iter = m_light_pins_map.find( pin );
     return iter == m_light_pins_map.end( ) ? "UNKNOWN" : iter->second;
@@ -117,11 +117,11 @@ string config_t::get_light_name( uint pin ) const
 
 //--------------------------------------------------------------------------------------------------
 
-string config_t::get_light_names( uchar pins ) const
+string config_t::get_light_names( lights_state_t pins ) const
 {
     string result;
 
-    for ( int i = 0; i < 8; i++ )
+    for ( size_t i = 0; i < sizeof( lights_state_t ) * 8; i++ )
     {
         bool is_on = ( pins >> i ) & 0x1;
         if ( !is_on ) continue;
@@ -139,7 +139,7 @@ string config_t::get_light_names( uchar pins ) const
 
 //--------------------------------------------------------------------------------------------------
 
-string config_t::get_sensor_name( uint pin ) const
+string config_t::get_sensor_name( sensors_state_t pin ) const
 {
     pin_config_t::const_iterator iter = m_sensor_pins_map.find( pin );
     return iter == m_sensor_pins_map.end( ) ? "UNKNOWN" : iter->second;
@@ -147,11 +147,11 @@ string config_t::get_sensor_name( uint pin ) const
 
 //--------------------------------------------------------------------------------------------------
 
-string config_t::get_sensor_names( uchar pins ) const
+string config_t::get_sensor_names( sensors_state_t pins ) const
 {
     string result;
 
-    for ( int i = 0; i < 8; i++ )
+    for ( size_t i = 0; i < sizeof( sensors_state_t ) * 8; i++ )
     {
         bool is_on = ( pins >> i ) & 0x1;
         if ( !is_on ) continue;

@@ -6,8 +6,7 @@
 #include <threading.h>
 #include <utils.h>
 
-#include <raspberry/spi.h>
-#include <raspberry/gpio.h>
+#include <raspberry/i2c_master.h>
 
 
 #define COMMAND_LENGTH	6
@@ -16,36 +15,25 @@
 #define IR_BYTE			5
 #define SENSORS_BYTE	2
 
-
-#define RESET_GPIO			7
 #define RESET_DELAY			100
 #define RETRY_COUNT			3
 
 //--------------------------------------------------------------------------------------------------
 
-static char g_szRequestBuffer[ COMMAND_LENGTH ] = { 0x00, 0x00, 0x00, 0x00, 0x00, (char)0xFF };
-static char g_szResponseBuffer[ COMMAND_LENGTH ] = { 0 };
-
 #define REQ_CMD			0
 #define REQ_PARAM		1
-#define EXECUTE_REQUEST(_CMD_, _PARAM_) \
-	g_szRequestBuffer[REQ_CMD] = _CMD_; \
-	g_szRequestBuffer[REQ_PARAM] = _PARAM_; \
-	DUMP_REQUEST(); \
-	m_spi->read_write(g_szRequestBuffer, (char *)g_szResponseBuffer, COMMAND_LENGTH); \
-	DUMP_RESPONSE();
 
 //#define NEED_TO_DUMP_REQUEST
 //#define NEED_TO_DUMP_RESPONSE
 
 #ifdef NEED_TO_DUMP_REQUEST
-#	define DUMP_REQUEST() if (g_szRequestBuffer[REQ_CMD] != 0) dump_packet(g_szRequestBuffer);
+#	define DUMP_REQUEST() dump_packet(m_send_buffer);
 #else
 #	define DUMP_REQUEST()
 #endif
 
 #ifdef NEED_TO_DUMP_RESPONSE
-#	define DUMP_RESPONSE() dump_packet(g_szResponseBuffer);
+#	define DUMP_RESPONSE() dump_packet(m_recv_buffer);
 #else
 #	define DUMP_RESPONSE()
 #endif
@@ -56,33 +44,47 @@ lights_state_t g_previous_state = 0;
 
 //--------------------------------------------------------------------------------------------------
 
-device_driver_t::device_driver_t( )
-    : m_spi( NULL )
-    , m_reset_gpio( NULL )
-    , m_reset_count( 0 )
+device_driver_t::device_driver_t(  )
+    : m_slaves( )
 {
-    ASSERT( m_spi == NULL ); ASSERT( m_reset_gpio == NULL );
+    ASSERT( m_slaves.empty( ) );
 
-    m_spi = new spi_t( );
-    m_reset_gpio = new  gpio_t( RESET_GPIO, OUTPUT, PUD_UP );
+    int slave_addr = 0x50;
+    m_slaves.insert( { slave_addr, i2c_master_t( slave_addr ) } );
+    slave_addr = 0x51;
+    m_slaves.insert( { slave_addr, i2c_master_t( slave_addr ) } );
 }
 
 //--------------------------------------------------------------------------------------------------
 
 device_driver_t::~device_driver_t( )
 {
-    ASSERT( m_spi != NULL ); ASSERT( m_reset_gpio != NULL );
+    for( auto& slave : m_slaves ) {
+        slave.second.close( );
+    }
+}
 
-    FREE_POINTER( m_spi );
-    FREE_POINTER( m_reset_gpio );
+//--------------------------------------------------------------------------------------------------
+
+bool
+device_driver_t::init( const char* dev /*= "/dev/i2c-1"*/ )
+{
+    for( auto& slave : m_slaves ) {
+        if ( !slave.second.init( dev ) || !slave.second.connect( ) ) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 //--------------------------------------------------------------------------------------------------
 
 bool device_driver_t::execute_command( const device_command_t& command, device_state_t& state )
 {
-    ASSERT( m_spi != NULL );
+    ASSERT( !m_slaves.empty( ) );
 
+/*
     int tries = 0;
     do
     {
@@ -102,40 +104,17 @@ bool device_driver_t::execute_command( const device_command_t& command, device_s
     while ( true );
 
     update_state( state );
+*/
     return true;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-bool device_driver_t::check_correctness( ) const
-{
-    return g_szResponseBuffer[ 0 ] == (char)0xFF && g_szResponseBuffer[ 5 ] == 0x00;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void device_driver_t::do_reset( )
-{
-    LOG_ERROR( "Incorrect response. Reset #%u", ++m_reset_count );
-    dump_packet( g_szResponseBuffer );
-
-    m_reset_gpio->set( false ); // set LOW level to reset MC
-    utils::sleep_ms( RESET_DELAY );
-
-    m_reset_gpio->set( true ); // set HIGH - normal level
-    utils::sleep_ms( RESET_DELAY );
-
-    EXECUTE_REQUEST( EC_TURNOFF, ~g_previous_state );	// off previously disabled
-    EXECUTE_REQUEST( EC_TURNON, g_previous_state );	// and on active
 }
 
 //--------------------------------------------------------------------------------------------------
 
 void device_driver_t::update_state( device_state_t& state ) const
 {
-    state.lights = g_szResponseBuffer[ LIGHTS_BYTE ];
-    state.buttons = g_szResponseBuffer[ BUTTONS_BYTE ];
-    state.sensors = g_szResponseBuffer[ SENSORS_BYTE ];
+    state.lights = m_recv_buffer[ LIGHTS_BYTE ];
+    state.buttons = m_recv_buffer[ BUTTONS_BYTE ];
+    state.sensors = m_recv_buffer[ SENSORS_BYTE ];
 
     g_previous_state = state.lights;
 }
@@ -144,14 +123,10 @@ void device_driver_t::update_state( device_state_t& state ) const
 
 void device_driver_t::dump_packet( char packet[] ) const
 {
-    static size_t packet_sent = 0;
-
-    for ( int i = 0; i < 6; ++i )
+    for ( int i = 0; i < PACKET_SIZE; ++i )
     {
         cout << hex << setw( 2 ) << setfill( '0' ) << (int)packet[ i ] << ' ';
     }
-
-    cout << '[' << m_reset_count << "] " << ++packet_sent << endl;
 }
 
 //--------------------------------------------------------------------------------------------------

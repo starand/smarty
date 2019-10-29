@@ -207,7 +207,7 @@ void mobile_register_t::set_heartbeat_lasttime( socket_t *socket )
 void mobile_register_t::update_clients( const lights_state_t& state )
 {
     light_notification_t notification;
-    notification.lights_state = static_cast< uchar >( state );
+    notification.lights_state = state;
 
     mutex_locker_t lock( m_client_list_mutex );
     client_list_t::iterator itList = m_client_list.begin( );

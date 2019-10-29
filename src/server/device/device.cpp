@@ -205,10 +205,10 @@ void device_t::check_buttons_changes( )
             observer->on_button_pressed( m_device_state.buttons );
         }
 
-        uchar changed = prev_state ^ current_state;
+        buttons_state_t changed = prev_state ^ current_state;
         string names = m_config.get_light_names( changed );
 
-        LOG_DEBUG( "[buttons] %u -> %u: ..... %s %s", (uint)prev_state, (uint)current_state,
+        LOG_DEBUG( "[buttons] %u -> %u: ..... %s %s", prev_state, current_state,
                    names.c_str( ), ( current_state > prev_state ? "on" : "off" ) );
     }
 }
@@ -230,7 +230,7 @@ void device_t::check_lights_changes( )
         uchar changed = prev_state ^ current_state;
         string names = m_config.get_light_names( changed );
 
-        LOG_DEBUG( "[lights] %u -> %u: ..... %s %s", (uint)prev_state, (uint)current_state,
+        LOG_DEBUG( "[lights] %u -> %u: ..... %s %s", prev_state, current_state,
                    names.c_str( ), ( current_state > prev_state ? "on" : "off" ) );
     }
 }
@@ -249,7 +249,7 @@ void device_t::check_sensors_changes( )
             observer->on_sensor_triggered( m_device_state.sensors );
         }
 
-        uchar changed = prev_state ^ current_state;
+        sensors_state_t changed = prev_state ^ current_state;
         string names = m_config.get_sensor_names( changed );
 
         LOG_TRACE( "[sensors] %u -> %u: .... %s %s", prev_state, current_state,

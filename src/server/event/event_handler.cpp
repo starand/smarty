@@ -386,7 +386,7 @@ void event_handler_t::check_light_objects( )
         time_t timeout = light.get_turnoff_timeout( );
         if ( timeout && timeout <= current )
         {
-            device_command_t cmd{ EC_TURNOFF, static_cast<device_param_t>( 1 << idx ) };
+            device_command_t cmd{ EC_TURNOFF, static_cast< device_param_t >( 1 << idx ) };
             add_command( create_device_command( cmd, 0 ) );
 
             light.clear_turnoff_time( );

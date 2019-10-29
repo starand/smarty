@@ -9,10 +9,7 @@ BIN_DIR = ../../bin
 SRC = $(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/device_controller.cpp \
 	$(SRC_DIR)/device_driver.cpp \
-	$(RASPI_DIR)/gpio.cpp \
-	$(RASPI_DIR)/c_gpio.cpp \
-	$(RASPI_DIR)/bcm2835.cpp \
-	$(RASPI_DIR)/spi.cpp \
+	$(RASPI_DIR)/i2c_master.cpp \
 	$(FW_DIR)/utils/utils.cpp \
 	$(FW_DIR)/utils/strutils.cpp \
 	$(FW_DIR)/utils/threading/threading.cpp \
